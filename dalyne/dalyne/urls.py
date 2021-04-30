@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth', include('knox.urls')),
     path('users/', include('users.urls')),
+    path('import-export/', include('import_export.urls')),
 ]
+

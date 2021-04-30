@@ -12,8 +12,6 @@ from datetime import datetime
 
 from rest_framework.exceptions import APIException
 
-from rest_framework import serializers
-
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user object"""
     company_name = serializers.CharField(required=False)
