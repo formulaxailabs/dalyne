@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext as _
 from core_module.models import User,Company, Profile, Plans,\
     UserPlans, CountryMaster, CurrencyMaster, ImportTable, \
-        ExportTable
+    ExportTable, ProductMaster, CompanyMaster
 
 admin.site.site_header = 'eximine superAdmin Dashboard'
 
@@ -77,4 +77,16 @@ class ImportTable(admin.ModelAdmin):
 class ExportTable(admin.ModelAdmin):
     list_display = [
         field.name for field in ExportTable._meta.fields
+        ]
+
+@admin.register(ProductMaster)
+class ProductMaster(admin.ModelAdmin):
+    list_display = [
+        field.name for field in ProductMaster._meta.fields
+        ]
+
+@admin.register(CompanyMaster)
+class CompanyMaster(admin.ModelAdmin):
+    list_display = [
+        field.name for field in CompanyMaster._meta.fields
         ]

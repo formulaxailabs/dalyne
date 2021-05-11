@@ -287,6 +287,8 @@ class ImportTable(models.Model):
     BE_TYPE = models.CharField(max_length=2, blank=True, null=True)
     CHA_NAME = models.TextField(blank=True, null=True)
     Item_No = models.IntegerField(blank=True, null=True)
+    COUNTRY = models.ForeignKey(CountryMaster, related_name='ImportTable_COUNTRY',
+                 on_delete=models.CASCADE, blank=True, null=True)
     
 
     is_deleted = models.BooleanField(default=False)
@@ -361,6 +363,8 @@ class ExportTable(models.Model):
     EXPORTER_PHONE = models.CharField(max_length=15, blank=True, null=True)
     EXPORTER_EMAIL = models.TextField(blank=True, null=True)
     EXPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
+    COUNTRY = models.ForeignKey(CountryMaster, related_name='ExportTable_COUNTRY',
+                 on_delete=models.CASCADE, blank=True, null=True)
 
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(
@@ -380,3 +384,55 @@ class ExportTable(models.Model):
 
     class Meta:
         verbose_name_plural = _("ExportTable")
+
+class ProductMaster(models.Model):
+    hs_code = models.CharField(
+            max_length=10, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    ProductID = models.ForeignKey('self', 
+        on_delete=models.CASCADE,blank=True,null=True)
+
+    is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+            User, related_name='ProductMaster_created_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    owned_by = models.ForeignKey(
+            User, related_name='ProductMaster_owned_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    updated_by = models.ForeignKey(
+            User, related_name='ProductMaster_updated_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name_plural = _("ProductMaster")
+
+class CompanyMaster(models.Model):
+    iec_code = models.CharField(
+        max_length=15, blank=True, null=True)
+    name = models.CharField(
+        max_length=50, blank=True, null=True)
+    location = models.TextField(blank=True, null=True)
+    
+    is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+            User, related_name='CompanyMaster_created_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    owned_by = models.ForeignKey(
+            User, related_name='CompanyMaster_owned_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    updated_by = models.ForeignKey(
+            User, related_name='CompanyMaster_updated_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name_plural = _("CompanyMaster")

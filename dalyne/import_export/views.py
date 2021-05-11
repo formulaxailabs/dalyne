@@ -9,7 +9,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework import status
 from core_module.models import Profile, User, Plans, ImportTable, \
-    CurrencyMaster, CountryMaster, ExportTable
+    CurrencyMaster, CountryMaster, ExportTable, ProductMaster, \
+    CompanyMaster
 from django.contrib.auth.signals import user_logged_out
 # from import_export.serializers import
 from rest_framework.exceptions import APIException
@@ -17,7 +18,8 @@ from datetime import datetime
 import time
 from django.core.files.storage import FileSystemStorage
 from import_export.serializers import ExcelDataImportSerializer, \
-    PlansListSerializer, ImportViewSerializer, ExportViewSerializer
+    PlansListSerializer, ImportViewSerializer, ExportViewSerializer,\
+    ProductMasterSerializer, CompanyMasterSerializer
 from dalyne.settings import MEDIA_URL
 import xlrd
 from rest_framework.pagination import LimitOffsetPagination
@@ -252,4 +254,42 @@ class ImportExportListView(generics.GenericAPIView):
 
         else:	
             response={"status_code":status.HTTP_200_OK,"message":"No data found!","result":[],"RecordsCount":0}
+        return Response(response)
+
+
+class ProductFilterListView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+
+    def get(self,request):
+        response={}
+        dataresult = []
+        
+        search_value = request.GET.get('search_value',"")
+        if search_value!="":
+            queryset = ProductMaster.objects.filter(is_deleted=False,description__icontains=search_value)
+            serializer_class = ProductMasterSerializer(queryset, many=True)
+            dataresult=serializer_class.data
+            response={'status_code': status.HTTP_200_OK,'result':dataresult}
+        else:
+            response={'status_code': status.HTTP_400_BAD_REQUEST,'result':dataresult}
+        return Response(response)
+
+
+class CompanyFilterListView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+
+    def get(self,request):
+        response={}
+        dataresult = []
+        
+        search_value = request.GET.get('search_value',"")
+        if search_value!="":
+            queryset = CompanyMaster.objects.filter(is_deleted=False,name__istartswith=search_value)
+            serializer_class = CompanyMasterSerializer(queryset, many=True)
+            dataresult=serializer_class.data
+            response={'status_code': status.HTTP_200_OK,'result':dataresult}
+        else:
+            response={'status_code': status.HTTP_400_BAD_REQUEST,'result':dataresult}
         return Response(response)
