@@ -5,7 +5,7 @@ from core_module.models import User,Company, Profile, Plans,\
     UserPlans, CountryMaster, CurrencyMaster, ImportTable, \
     ExportTable, ProductMaster, CompanyMaster
 
-admin.site.site_header = 'eximine superAdmin Dashboard'
+admin.site.site_header = 'dalyne superAdmin Dashboard'
 
 class UserAdmin(BaseUserAdmin):
     ordering = ['id']

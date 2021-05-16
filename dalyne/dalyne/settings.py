@@ -10,13 +10,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-e5m&9kjjwyvo+oasfws5@*1!s=*=)0b6^6s#h4#9wbo-@i+7c-'
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ENV_CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL")
+if not ENV_CELERY_BROKER_URL or  len(ENV_CELERY_BROKER_URL) == 0:
+    ENV_CELERY_BROKER_URL = "redis://redis:6379"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
+DEBUG = int(os.environ.get("DEBUG", default=0))
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 # Application definition
 
@@ -34,14 +34,9 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_PERMISSION_CLASSES': [  # remove
-    #     'rest_framework.permissions.AllowAny'
-    # ],
-    'DEFAULT_AUTHENTICATION_CLASSES': (  # added
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'knox.auth.TokenAuthentication',
     ),
-    # 'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",'%Y-%m-%d %H:%M:%S'
-    # 'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
 }
 
 MIDDLEWARE = [
@@ -53,6 +48,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'dalyne.urls'
 
@@ -77,28 +74,39 @@ WSGI_APPLICATION = 'dalyne.wsgi.application'
 AUTH_USER_MODEL = 'core_module.User'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
-
     'default': {
-
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'examine_test',
-        'USER': 'postgres',
-        'PASSWORD': '12345',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-
+        'ENGINE': os.environ.get('DB_ENGINE'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
     }
-
 }
 
+#====================Celery=====================================#
+from celery.schedules import crontab
+from django import db
+
+CELERY_BROKER_URL = ENV_CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = ENV_CELERY_BROKER_URL
+CELERY_CACHE_BACKEND = 'default'
+
+# django setting.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    }
+}
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_BEAT_SCHEDULE = {
+
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -141,10 +149,13 @@ PAGINATION_OFFSET=1
 
 
 STATIC_URL = '/static/'
-MEDIA_URL = BASE_DIR+'/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATIC_ROOT =  os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 300000
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

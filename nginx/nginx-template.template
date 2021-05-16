@@ -1,0 +1,33 @@
+# now we declare our main server
+
+#http {
+
+server {
+
+    listen 80;
+    # server_name app;
+
+    location / {
+        # everything is passed to Gunicorn
+        proxy_pass $DJANGOAPP;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_redirect off;
+        client_max_body_size 300M;
+        proxy_connect_timeout 600s;
+        proxy_send_timeout 600;
+        proxy_read_timeout 600s;
+    }
+
+    location /static/ {
+        autoindex on;
+        alias /backend/static/;
+    }
+    
+    location /media/ {
+        autoindex on;
+        alias /backend/media/;
+    }
+}
+    
+#}
