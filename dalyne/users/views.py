@@ -49,17 +49,17 @@ class LoginView(KnoxLoginView):
                 email=request.data['email']).exists()
             if not user_exist:
                 raise APIException(
-                    None,
-                    'You Have Entered An Invalid Email Address',
-                    status_code=status.HTTP_400_BAD_REQUEST)
+                    {"Message":"You Have Entered An Invalid Email Address.",
+                    "status_code":status.HTTP_400_BAD_REQUEST}
+                )
+                # raise APIException(
+                #     None,
+                #     'You Have Entered An Invalid Email Address',
+                #     status_code=status.HTTP_400_BAD_REQUEST)
             user_is_active = self.queryset.filter(
                 email=request.data['email'],
                 is_active=True)
             if not user_is_active:
-                # raise APIException(
-                #     None, 'sorry, Account is not active !',
-                #     status_code=status.HTTP_400_BAD_REQUEST)
-
                 raise APIException(
                     {"Message":"sorry, Account is not active !",
                     "status_code":status.HTTP_400_BAD_REQUEST}

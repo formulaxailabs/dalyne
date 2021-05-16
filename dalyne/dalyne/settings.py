@@ -1,7 +1,9 @@
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -13,7 +15,7 @@ SECRET_KEY = 'django-insecure-e5m&9kjjwyvo+oasfws5@*1!s=*=)0b6^6s#h4#9wbo-@i+7c-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -28,6 +30,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'core_module',
     'knox',
+    'import_export',
 ]
 
 REST_FRAMEWORK = {
@@ -37,7 +40,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (  # added
         'knox.auth.TokenAuthentication',
     ),
-    # 'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
+    # 'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",'%Y-%m-%d %H:%M:%S'
+    # 'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
 }
 
 MIDDLEWARE = [
@@ -128,11 +132,17 @@ USE_L10N = True
 
 USE_TZ = True
 
+PAGINATION_LIMIT=100
+PAGINATION_OFFSET=1
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
+
 STATIC_URL = '/static/'
+MEDIA_URL = BASE_DIR+'/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

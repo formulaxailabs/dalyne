@@ -110,6 +110,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# From project Dalyne
+dalyne/media/
+
 # Spyder project settings
 .spyderproject
 .spyproject

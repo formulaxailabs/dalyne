@@ -223,17 +223,10 @@ class CurrencyMaster(models.Model):
         return str(self.id)
 
     class Meta:
-        verbose_name_plural = _("Currency")
+        verbose_name_plural = _("CurrencyMaster")
 
 class ImportTable(models.Model):
-    name = models.CharField(
-            max_length=255, blank=True, null=True)
-    cost = models.IntegerField(blank=True, null=True)
-    data_access_of_all_countries = models.TextField(
-        blank=True, null=True)
-    workspace_shipment_limit = models.BigIntegerField(
-            blank=True, null=True)
-    
+            
     BE_DATE = models.DateTimeField(blank=True, null=True)
     MONTH = models.CharField(
             max_length=10, blank=True, null=True)
@@ -275,26 +268,28 @@ class ImportTable(models.Model):
     ASS_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
     EXCHANGE_RATE = models.IntegerField(blank=True, null=True)
-    EXPORTER_NAME = models.CharField(
-            max_length=30, blank=True, null=True)
+    EXPORTER_NAME = models.TextField(blank=True, null=True)
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     COUNTRY_OF_ORIGIN = models.ForeignKey(CountryMaster, on_delete=models.CASCADE,
             blank=True, null=True)
-    PORT_OF_LOADING = models.CharField(max_length=30, blank=True, null=True)
-    PORT_OF_DISCHARGE = models.CharField(max_length=30, blank=True, null=True)
+    PORT_OF_LOADING = models.TextField(blank=True, null=True)
+    PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
     PORT_CODE = models.CharField(max_length=10, blank=True, null=True)
     MODE_OF_PORT  = models.CharField(max_length=5, blank=True, null=True)
     IMPORTER_ID = models.CharField(max_length=15, blank=True, null=True)
     IMPORTER_NAME  = models.CharField(max_length=40, blank=True, null=True)
     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
-    IMPORTER_CITY_STATE = models.CharField(max_length=20, blank=True, null=True)
+    IMPORTER_CITY_STATE = models.TextField(blank=True, null=True)
     IMPORTER_PIN = models.CharField(max_length=10, blank=True, null=True)
     IMPORTER_PHONE = models.CharField(max_length=15, blank=True, null=True)
-    IMPORTER_EMAIL = models.CharField(max_length=20, blank=True, null=True)
-    IMPORTER_CONTACT_PERSON = models.CharField(max_length=30, blank=True, null=True)
+    IMPORTER_EMAIL = models.TextField(blank=True, null=True)
+    IMPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     BE_TYPE = models.CharField(max_length=2, blank=True, null=True)
-    CHA_NAME = models.CharField(max_length=30, blank=True, null=True)
+    CHA_NAME = models.TextField(blank=True, null=True)
     Item_No = models.IntegerField(blank=True, null=True)
+    COUNTRY = models.ForeignKey(CountryMaster, related_name='ImportTable_COUNTRY',
+                 on_delete=models.CASCADE, blank=True, null=True)
+    
 
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(
@@ -315,3 +310,129 @@ class ImportTable(models.Model):
     class Meta:
         verbose_name_plural = _("ImportTable")
 
+
+
+class ExportTable(models.Model):    
+    SB_DATE = models.DateTimeField(blank=True, null=True)
+    MONTH = models.CharField(
+            max_length=10, blank=True, null=True)
+    YEAR = models.IntegerField(blank=True, null=True)
+    RITC = models.BigIntegerField(blank=True, null=True)
+    TWO_DIGIT = models.IntegerField(blank=True, null=True)
+    FOUR_DIGIT = models.IntegerField(blank=True, null=True)
+    RITC_DISCRIPTION = models.TextField(blank=True, null=True)
+    UQC = models.CharField(
+            max_length=5, blank=True, null=True)
+    QUANTITY = models.DecimalField(max_digits=15, decimal_places=2,
+                 blank=True, null=True)
+    CURRENCY = models.ForeignKey(CurrencyMaster, on_delete=models.CASCADE,
+            blank=True, null=True)
+    UNT_PRICE_FC = models.DecimalField(max_digits=20, decimal_places=7,
+            blank=True, null=True)
+    INV_VALUE_FC = models.DecimalField(max_digits=20, decimal_places=7,
+            blank=True, null=True)
+    UNT_PRICE_INR = models.DecimalField(max_digits=15, decimal_places=2,
+            blank=True, null=True)
+    INVOICE_NO = models.CharField(max_length=40, blank=True, null=True)
+    SB_NO = models.BigIntegerField(blank=True, null=True)
+    UNIT_RATE_WITH_FOB = models.DecimalField(max_digits=25, decimal_places=10,
+            blank=True, null=True)
+    PER_UNT_FOB = models.DecimalField(max_digits=25, decimal_places=10,
+            blank=True, null=True)
+    FOB_INR = models.DecimalField(max_digits=20, decimal_places=7,
+            blank=True, null=True)
+    FOB_FC = models.DecimalField(max_digits=25, decimal_places=10,
+        blank=True, null=True)
+    FOB_USD = models.DecimalField(max_digits=25, decimal_places=10,
+        blank=True, null=True)
+    EXCHANGE_RATE = models.IntegerField(blank=True, null=True)
+    IMPORTER_NAME = models.CharField(max_length=40, blank=True, null=True)
+    IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
+    COUNTRY_OF_ORIGIN = models.ForeignKey(CountryMaster, on_delete=models.CASCADE,
+            blank=True, null=True)
+    PORT_OF_LOADING = models.TextField(blank=True, null=True)
+    PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
+    PORT_CODE = models.CharField(max_length=10, blank=True, null=True)
+    MODE_OF_PORT  = models.CharField(max_length=5, blank=True, null=True)
+    EXPORTER_ID = models.CharField(max_length=15, blank=True, null=True)
+    EXPORTER_NAME = models.TextField(blank=True, null=True)
+    EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
+    EXPORTER_CITY = models.TextField(blank=True, null=True)
+    EXPORTER_STATE = models.TextField(blank=True, null=True)
+    EXPORTER_PIN = models.CharField(max_length=10, blank=True, null=True)
+    EXPORTER_PHONE = models.CharField(max_length=15, blank=True, null=True)
+    EXPORTER_EMAIL = models.TextField(blank=True, null=True)
+    EXPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
+    COUNTRY = models.ForeignKey(CountryMaster, related_name='ExportTable_COUNTRY',
+                 on_delete=models.CASCADE, blank=True, null=True)
+
+    is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+            User, related_name='ExportTable_created_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    owned_by = models.ForeignKey(
+            User, related_name='ExportTable_owned_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    updated_by = models.ForeignKey(
+            User, related_name='ExportTable_updated_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name_plural = _("ExportTable")
+
+class ProductMaster(models.Model):
+    hs_code = models.CharField(
+            max_length=10, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    ProductID = models.ForeignKey('self', 
+        on_delete=models.CASCADE,blank=True,null=True)
+
+    is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+            User, related_name='ProductMaster_created_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    owned_by = models.ForeignKey(
+            User, related_name='ProductMaster_owned_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    updated_by = models.ForeignKey(
+            User, related_name='ProductMaster_updated_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name_plural = _("ProductMaster")
+
+class CompanyMaster(models.Model):
+    iec_code = models.CharField(
+        max_length=15, blank=True, null=True)
+    name = models.CharField(
+        max_length=50, blank=True, null=True)
+    location = models.TextField(blank=True, null=True)
+    
+    is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+            User, related_name='CompanyMaster_created_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    owned_by = models.ForeignKey(
+            User, related_name='CompanyMaster_owned_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    updated_by = models.ForeignKey(
+            User, related_name='CompanyMaster_updated_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name_plural = _("CompanyMaster")
