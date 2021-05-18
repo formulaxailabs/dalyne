@@ -11,8 +11,6 @@ from rest_framework import status
 from core_module.models import Profile, User, Plans, ImportTable, \
     CurrencyMaster, CountryMaster, ExportTable, ProductMaster, \
     CompanyMaster
-from django.contrib.auth.signals import user_logged_out
-# from import_export.serializers import
 from rest_framework.exceptions import APIException
 from datetime import datetime
 import time
@@ -26,19 +24,37 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.conf import settings
 from django.core.paginator import Paginator
 import json
+from custom_decorator import response_modify_decorator_post, \
+     response_modify_decorator_get_after_execution, \
+     response_decorator_list_or_get_after_execution_onoff_pagination, \
+     response_modify_decorator_update
+
 
 class PlansListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
-    def get(self,request):
-        response={}
-        queryset = Plans.objects.filter(is_deleted=False)
-        serializer_class = PlansListSerializer(queryset, many=True)
-        dataresult=serializer_class.data
+    @response_modify_decorator_get_after_execution
+    def get(self, request, *args, **kwargs):
+        data = {}
+        plans_data = Plans.objects.filter(is_deleted=False).values()
+        data['features'] = [
+            'Package Validity',
+            'Download Points',
+            'Unlimited Data Acecess',
+            'Workspaces',
+            'Searches',
+            'Workspaces Validity',
+            'Workspaces Deletion ( Per Qtr.)',
+            'Shipment limit in Workspaces',
+            'Add-On Points Facility',
+            'Hot Products',
+            'Hot Companies',
+            'User',
+            ]
+        data['plans_list'] = plans_data
 
-        response={'status_code': status.HTTP_200_OK,'result':dataresult}
-        return Response(response)
+        return Response(data)
 
 class ExcelDataImportView(generics.CreateAPIView):
     """Create a new user in system"""

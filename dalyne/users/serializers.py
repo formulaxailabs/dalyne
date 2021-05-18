@@ -1,16 +1,22 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import ugettext_lazy as _
 from django.db import transaction
-from core_module.models import Profile, Company, UserPlans
+from core_module.models import Profile, UserPlans, Tenant
 from rest_framework import serializers
 from rest_framework import status
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-# from core.utils import generate_token
+from custom_exception_message import CustomAPIException
 from datetime import datetime
-
 from rest_framework.exceptions import APIException
+from django.contrib.sites.shortcuts import get_current_site
+from users.tasks import send_mail_for_account_activation
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from core_module.utils import generate_token
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user object"""
@@ -34,30 +40,13 @@ class UserSerializer(serializers.ModelSerializer):
             'firstname', 'password', 'user', 'lastname',
             )
 
-    def _pass_validation(self, password):
-        if len(password) < 8:
-            # raise APIException(
-            #     None,
-            #     "password must be equal or greater than 8 char",
-            #     status_code=status.HTTP_400_BAD_REQUEST
-            #     )
-            raise APIException(
-                {"Message":"password must be equal or greater than 8 char",
-                "status_code":status.HTTP_400_BAD_REQUEST}
-            )
-        else:
-            return True
 
     def _exist_or_not_validator(self, exists_or_not):
         if exists_or_not:
-            # raise APIException(
-            #     None,
-            #     "email already exists",
-            #     status_code=status.HTTP_400_BAD_REQUEST
-            #     )
             raise APIException(
-                    {"Message":"email already exists",
-                    "status_code":status.HTTP_400_BAD_REQUEST}
+                None,
+                "email already exists",
+                status_code=status.HTTP_400_BAD_REQUEST
                 )
         else:
             return True
@@ -67,26 +56,21 @@ class UserSerializer(serializers.ModelSerializer):
 
         with transaction.atomic():
             request = self.context.get('request')
-            company_name = validated_data.pop('company_name')
+            company_name = validated_data.get('company_name')
             plans = validated_data.pop('plans')
             firstname = validated_data.get('firstname')
             lastname = validated_data.get('lastname')
             email = validated_data.get('email')
             phone_no = validated_data.get('phone_no')
             password = validated_data.get('password')
-            # self._pass_validation(password)
-            # rua_check = 'mailto:dmarc.reports@rua.secureyourinbox.net'
-            # ruf_check = 'mailto:forensic.reports@ruf.secureyourinbox.net'
             exists_or_not = get_user_model().objects.filter(
-                                    email=validated_data.get(
-                                        'email'
-                                        )
+                                    email=email
                                     ).exists()
             self._exist_or_not_validator(exists_or_not)
             try:
                 user = get_user_model().objects.\
                                 create_user(
-                                    email=validated_data.get('email'),
+                                    email=email,
                                     name=firstname+" "+lastname,
                                     password=password
                                 )
@@ -96,72 +80,29 @@ class UserSerializer(serializers.ModelSerializer):
                         user=user,
                         firstname=firstname,
                         lastname=lastname,
-                        email=validated_data.get('email'),
+                        email=email,
                         phone_no=phone_no
                     )
-                company_id, created = Company.objects.get_or_create(
-                        name=company_name.strip())
+                tenant, created = Tenant.objects.get_or_create(
+                                org_admin=user,
+                                company_name=company_name,
+                                )
+
                 UserPlans.objects.create(
                         user=user,
-                        company=company_id,
+                        tenant=tenant,
                         plans_id=plans
                     )                
 
-            except Exception:
-                raise APIException(
-                    {"Message":"error ! bad request please check input",
-                    "status_code":status.HTTP_400_BAD_REQUEST}
-                )
-            
-            validated_data['company_name'] = company_name
-            validated_data['user'] = user
-            # domain = self._url_handler(current_site)
-            # uid = urlsafe_base64_encode(force_bytes(user.pk))
-            # token = generate_token.make_token(user)
-            # ip = get_client_ip(request)
-            # name = firstname + " " + lastname
-            # send_mail_for_account_activation.delay(
-            #     email,
-            #     name,
-            #     domain,
-            #     uid,
-            #     token,
-            #     ip
-            # )
-            # default_theme_exists = Theme.objects.filter(
-            #     theme_name='Default')
-            # if default_theme_exists:
-            #     Profile.objects.filter(
-            #         id=str(profile)).update(
-            #             current_theme=default_theme_exists.get().id)
-            # else:
-            #     theme = Theme.objects.create(
-            #         theme_name='Default')
-            #     Profile.objects.filter(
-            #         id=profile).update(
-            #             current_theme=theme)
+            except Exception as e:
+                raise e
+                # raise CustomAPIException(
+                #     None,
+                #     "error ! bad request please check input",
+                #     status_code=status.HTTP_400_BAD_REQUEST
+                # )
 
-            # ip = get_client_ip(request)
-            # geo_data = get_ip_location(ip)
-            # AuditTable.objects.create(
-            #     tenant=tenant,
-            #     username=user,
-            #     timestamp=datetime.now(),
-            #     ip_address=ip,
-            #     continent_code=geo_data[
-            #                 'continent_code'
-            #                 ] if 'continent_code' in geo_data else None,
-            #     continent_name=geo_data['continent_name'],
-            #     country_code=geo_data['country_code'],
-            #     country_name=geo_data['country_name'],
-            #     region_code=geo_data['region_code'],
-            #     region_name=geo_data['region_name'],
-            #     city=geo_data['city'],
-            #     country_flag=geo_data['location']['country_flag'],
-            #     country_flag_emoji=geo_data[
-            #         'location']['country_flag_emoji'],
-            #     action=email + ' Signup'
-            # )
+            validated_data['user'] = user
             validated_data.pop('password')
             return validated_data
 
@@ -186,12 +127,8 @@ class AuthTokenSerializer(serializers.Serializer):
         )
         if not user:
             msg = _('Invalid Login Credentials. Please Check Your Username & Password')
-            # raise APIException(
-            #         None, msg,
-            #         status_code=status.HTTP_400_BAD_REQUEST)
             raise APIException(
-                    {"Message":"Invalid Login Credentials. Please Check Your Username & Password",
-                    "status_code":status.HTTP_400_BAD_REQUEST}
-                )
+                    None, msg,
+                    status_code=status.HTTP_400_BAD_REQUEST)
         attrs['user'] = user
         return attrs

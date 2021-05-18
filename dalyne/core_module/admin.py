@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext as _
-from core_module.models import User,Company, Profile, Plans,\
+from core_module.models import User, Profile, Plans,\
     UserPlans, CountryMaster, CurrencyMaster, ImportTable, \
-    ExportTable, ProductMaster, CompanyMaster
+    ExportTable, ProductMaster, CompanyMaster, Tenant, MailTemplate
 
 admin.site.site_header = 'dalyne superAdmin Dashboard'
 
@@ -37,10 +37,11 @@ class Profile(admin.ModelAdmin):
     list_display = [
         field.name for field in Profile._meta.fields
         ]
-@admin.register(Company)
-class Company(admin.ModelAdmin):
+
+@admin.register(Tenant)
+class Tenant(admin.ModelAdmin):
     list_display = [
-        field.name for field in Company._meta.fields
+        field.name for field in Tenant._meta.fields
         ]
 
 @admin.register(Plans)
@@ -89,4 +90,10 @@ class ProductMaster(admin.ModelAdmin):
 class CompanyMaster(admin.ModelAdmin):
     list_display = [
         field.name for field in CompanyMaster._meta.fields
+        ]
+
+@admin.register(MailTemplate)
+class MailTemplate(admin.ModelAdmin):
+    list_display = [
+        field.name for field in MailTemplate._meta.fields
         ]
