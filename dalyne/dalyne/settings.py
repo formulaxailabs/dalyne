@@ -85,6 +85,17 @@ DATABASES = {
     }
 }
 
+#===============Email================================#
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_FROM_C = 'noreply@formulaxai.com'
+DEFAULT_FROM_EMAIL = 'noreply@formulaxai.com'
+SERVER_EMAIL = 'noreply@formulaxai.com'
+EMAIL_HOST = 'mail.formulaxai.comt'
+EMAIL_HOST_USER = 'noreply@formulaxai.com'
+EMAIL_HOST_PASSWORD = 'Website@123'
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True
+
 #====================Celery=====================================#
 from celery.schedules import crontab
 from django import db
@@ -107,6 +118,12 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
 
 }
+
+# ============= Error Msg configrations =================
+MSG_SUCCESS="Success"
+MSG_NO_DATA="No Data Found"
+MSG_ERROR="Failure"
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

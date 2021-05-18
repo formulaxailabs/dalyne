@@ -35,13 +35,38 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
 
+class Tenant(models.Model):
+    org_admin = models.OneToOneField(
+            User, on_delete=models.CASCADE, blank=True, null=True)
+    company_name = models.CharField(
+            max_length=255, blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+            User, related_name='Tenant_created_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    owned_by = models.ForeignKey(
+            User, related_name='Tenant_owned_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    updated_by = models.ForeignKey(
+            User, related_name='Tenant_updated_by',
+            on_delete=models.CASCADE, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name_plural = _("Tenant")
+
+
 class Profile(models.Model):
     user = models.OneToOneField(
             User, on_delete=models.CASCADE, blank=True, null=True)
     firstname = models.CharField(max_length=255, blank=True, null=True)
     lastname = models.CharField(max_length=255, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    phone_no = models.BigIntegerField(blank=True, null=True)
+    phone_no = models.CharField(max_length=255, blank=True, null=True)
     profile_pic = models.ImageField(
                     upload_to="avatar",
                     default="avatar/None/default.png"
@@ -66,71 +91,61 @@ class Profile(models.Model):
         verbose_name_plural = _("profile")
 
 
-class Company(models.Model):
-    name = models.CharField(
-            max_length=255, blank=True, null=True)
-    location = models.TextField(blank=True, null=True)
-    is_deleted = models.BooleanField(default=False)
-    created_by = models.ForeignKey(
-            User, related_name='Company_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    owned_by = models.ForeignKey(
-            User, related_name='Company_owned_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    updated_by = models.ForeignKey(
-            User, related_name='Company_updated_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name_plural = _("Company")
-
-
 class Plans(models.Model):
+
+    DATE_POSTFIX = (
+        ('days', 'days'),
+        ('months', 'months'),
+        ('year', 'year'),
+        ('quaterly', 'quaterly'),
+
+    )
+    CHOICES = (
+        ('Per Qtr', 'Per Qtr'),
+        ('Per year', 'Per year'),
+    )
+
     name = models.CharField(
             max_length=255, blank=True, null=True)
     cost = models.IntegerField(blank=True, null=True)
-    data_access_of_all_countries = models.TextField(
-        blank=True, null=True)
-    one_year_validity = models.CharField(
+    pakage_validity = models.IntegerField(blank=True, null=True)
+    pakage_postfix = models.CharField(
+        max_length=50,
+        choices=DATE_POSTFIX,
+        default='months'
+        )
+    download_points = models.IntegerField(blank=True, null=True)
+    unlimited_data_access = models.IntegerField(blank=True, null=True)
+    unlimited_data_access_postfix = models.CharField(
+        max_length=50,
+        choices=DATE_POSTFIX,
+        default='months'
+        )
+    workspaces = models.IntegerField(blank=True, null=True)
+    searches = models.CharField(
             max_length=255, blank=True, null=True)
-    unlimited_full_shipment_view = models.CharField(
-            max_length=255, blank=True, null=True)
-    unlimited_importer_exporter_view = models.CharField(
-            max_length=255, blank=True, null=True)
-    unlimited_view_of_linkedin_contacts = models.CharField(
-            max_length=255, blank=True, null=True)
-    unlimited_view_charts_and_dashboard = models.CharField(
-            max_length=255, blank=True, null=True)
-    unlimited_searches = models.IntegerField(
-            blank=True, null=True)
-    number_of_workspaces = models.IntegerField(
-            blank=True, null=True)
-    workspace_deletion = models.IntegerField(
-            blank=True, null=True)
-    workspace_shipment_limit = models.BigIntegerField(
-            blank=True, null=True)
-    shipment_credits_for_excel_download = models.BigIntegerField(
-            blank=True, null=True)
-    roll_over_points_to_next_year = models.CharField(
-            max_length=255, blank=True, null=True)
-    download_buyers_or_suppliers_contact_profile = models.IntegerField(
-            blank=True, null=True)
-    contact_details_phone_and_email = models.IntegerField(
-            blank=True, null=True)
-    hot_products = models.IntegerField(
-            blank=True, null=True)
-    hot_companies = models.CharField(
-            max_length=255, blank=True, null=True)
-    users_count = models.IntegerField(
-            blank=True, null=True)
-    validity_of_days = models.IntegerField(
-            blank=True, null=True) #Plan validity(days)
-
+    workspaces_validity = models.IntegerField(blank=True, null=True)
+    workspaces_validity_postfix = models.CharField(
+        max_length=50,
+        choices=DATE_POSTFIX,
+        default='months'
+        )
+    workspaces_deletion_per_qtr = models.IntegerField(blank=True, null=True)
+    shipment_limit_in_workspaces = models.IntegerField(blank=True, null=True)
+    add_on_points_Facility = models.BooleanField(default=False)
+    hot_products = models.IntegerField(blank=True, null=True)
+    hot_products_postfix = models.CharField(
+        max_length=50,
+        choices=CHOICES,
+        default='Per Qtr'
+        )
+    hot_company = models.IntegerField(blank=True, null=True)
+    hot_company_postfix = models.CharField(
+        max_length=50,
+        choices=CHOICES,
+        default='Per Qtr'
+        )
+    user = models.IntegerField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(
             User, related_name='Plans_created_by',
@@ -154,7 +169,7 @@ class Plans(models.Model):
 class UserPlans(models.Model):
     user = models.ForeignKey(
             User, on_delete=models.CASCADE, blank=True, null=True)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE,
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE,
             blank=True, null=True)
     plans = models.ForeignKey(
             Plans, on_delete=models.CASCADE, blank=True, null=True)
@@ -434,3 +449,18 @@ class CompanyMaster(models.Model):
 
     class Meta:
         verbose_name_plural = _("CompanyMaster")
+
+
+class MailTemplate(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    code = models.CharField(max_length=255, blank=True, null=True)
+    subject = models.CharField(max_length=255, blank=True, null=True)
+    html_content = models.TextField(blank=True, null=True)
+    template_variable = models.TextField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name_plural = _("Mail Template")
+
+    def __str__(self):
+        return self.name
