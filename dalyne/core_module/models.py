@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,PermissionsMixin
 
+
 class UserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **extra_fields):
@@ -194,6 +195,7 @@ class UserPlans(models.Model):
     class Meta:
         verbose_name_plural = _("UserPlans")
 
+
 class CountryMaster(models.Model):
     name = models.CharField(
             max_length=255, blank=True, null=True)
@@ -217,6 +219,7 @@ class CountryMaster(models.Model):
     class Meta:
         verbose_name_plural = _("CountryMaster")
 
+
 class CurrencyMaster(models.Model):
     name = models.CharField(
             max_length=255, blank=True, null=True)
@@ -239,6 +242,7 @@ class CurrencyMaster(models.Model):
 
     class Meta:
         verbose_name_plural = _("CurrencyMaster")
+
 
 class ImportTable(models.Model):
             
@@ -326,7 +330,6 @@ class ImportTable(models.Model):
         verbose_name_plural = _("ImportTable")
 
 
-
 class ExportTable(models.Model):    
     SB_DATE = models.DateTimeField(blank=True, null=True)
     MONTH = models.CharField(
@@ -400,19 +403,14 @@ class ExportTable(models.Model):
     class Meta:
         verbose_name_plural = _("ExportTable")
 
+
 class ProductMaster(models.Model):
     hs_code = models.CharField(
             max_length=10, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    ProductID = models.ForeignKey('self', 
-        on_delete=models.CASCADE,blank=True,null=True)
-
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(
             User, related_name='ProductMaster_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    owned_by = models.ForeignKey(
-            User, related_name='ProductMaster_owned_by',
             on_delete=models.CASCADE, blank=True, null=True)
     updated_by = models.ForeignKey(
             User, related_name='ProductMaster_updated_by',
@@ -426,19 +424,19 @@ class ProductMaster(models.Model):
     class Meta:
         verbose_name_plural = _("ProductMaster")
 
+
 class CompanyMaster(models.Model):
     iec_code = models.CharField(
         max_length=15, blank=True, null=True)
     name = models.CharField(
         max_length=50, blank=True, null=True)
-    location = models.TextField(blank=True, null=True)
-    
+
     is_deleted = models.BooleanField(default=False)
+    location = models.CharField(
+        max_length=60, null=True, blank=True
+    )
     created_by = models.ForeignKey(
             User, related_name='CompanyMaster_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    owned_by = models.ForeignKey(
-            User, related_name='CompanyMaster_owned_by',
             on_delete=models.CASCADE, blank=True, null=True)
     updated_by = models.ForeignKey(
             User, related_name='CompanyMaster_updated_by',
