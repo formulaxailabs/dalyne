@@ -29,7 +29,33 @@ class ProductMasterSerializer(serializers.ModelSerializer):
         model = ProductMaster
         fields = ('id','hs_code','description')
 
+
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyMaster
         fields = ('id','iec_code','name')
+
+
+class ProductImportSerializer(serializers.Serializer):
+
+    products_file = serializers.FileField(
+        required=True
+    )
+
+    class Meta:
+        fields = (
+            'product_file'
+        )
+
+
+class CompanyImportSerializer(serializers.Serializer):
+
+    company_file = serializers.FileField(
+        required=True
+    )
+
+    class Meta:
+        fields = (
+            'company_file'
+        )
+
