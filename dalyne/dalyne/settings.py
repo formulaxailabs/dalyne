@@ -31,12 +31,21 @@ INSTALLED_APPS = [
     'core_module',
     'knox',
     'import_export',
+    'drf_yasg',
+    'django_filters',
+
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'knox.auth.TokenAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS':
+        'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+    'ORDERING_PARAM': 'ordering',
 }
 
 MIDDLEWARE = [
@@ -84,6 +93,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD'),
     }
 }
+
 
 #===============Email================================#
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -176,3 +186,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 300000
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+#====================Swagger=====================================#
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        "apiKey": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
