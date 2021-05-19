@@ -199,13 +199,9 @@ class UserPlans(models.Model):
 class CountryMaster(models.Model):
     name = models.CharField(
             max_length=255, blank=True, null=True)
-    location = models.TextField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(
             User, related_name='Country_master_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    owned_by = models.ForeignKey(
-            User, related_name='Country_master_owned_by',
             on_delete=models.CASCADE, blank=True, null=True)
     updated_by = models.ForeignKey(
             User, related_name='Country_master_updated_by',
@@ -255,11 +251,10 @@ class ImportTable(models.Model):
     FOUR_DIGIT = models.IntegerField(blank=True, null=True)
     RITC_DISCRIPTION = models.TextField(blank=True, null=True)
     UQC = models.CharField(
-            max_length=5, blank=True, null=True)
+            max_length=60, blank=True, null=True)
     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2,
                  blank=True, null=True)
-    CURRENCY = models.ForeignKey(CurrencyMaster, on_delete=models.CASCADE,
-            blank=True, null=True)
+    CURRENCY = models.TextField(null=True, blank=True)
     UNT_PRICE_FC = models.DecimalField(max_digits=20, decimal_places=7,
             blank=True, null=True)
     INV_VALUE_FC = models.DecimalField(max_digits=20, decimal_places=7,
@@ -289,33 +284,27 @@ class ImportTable(models.Model):
     EXCHANGE_RATE = models.IntegerField(blank=True, null=True)
     EXPORTER_NAME = models.TextField(blank=True, null=True)
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
-    COUNTRY_OF_ORIGIN = models.ForeignKey(CountryMaster, on_delete=models.CASCADE,
-            blank=True, null=True)
+    COUNTRY_OF_ORIGIN = models.TextField(blank=True, null=True)
     PORT_OF_LOADING = models.TextField(blank=True, null=True)
     PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
-    PORT_CODE = models.CharField(max_length=10, blank=True, null=True)
-    MODE_OF_PORT  = models.CharField(max_length=5, blank=True, null=True)
-    IMPORTER_ID = models.CharField(max_length=15, blank=True, null=True)
-    IMPORTER_NAME  = models.CharField(max_length=40, blank=True, null=True)
+    PORT_CODE = models.CharField(max_length=60, blank=True, null=True)
+    MODE_OF_PORT  = models.CharField(max_length=60, blank=True, null=True)
+    IMPORTER_ID = models.TextField(blank=True, null=True)
+    IMPORTER_NAME  = models.TextField(blank=True, null=True)
     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
     IMPORTER_CITY_STATE = models.TextField(blank=True, null=True)
-    IMPORTER_PIN = models.CharField(max_length=10, blank=True, null=True)
-    IMPORTER_PHONE = models.CharField(max_length=15, blank=True, null=True)
+    IMPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
+    IMPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
     IMPORTER_EMAIL = models.TextField(blank=True, null=True)
     IMPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
-    BE_TYPE = models.CharField(max_length=2, blank=True, null=True)
+    BE_TYPE = models.CharField(max_length=120, blank=True, null=True)
     CHA_NAME = models.TextField(blank=True, null=True)
     Item_No = models.IntegerField(blank=True, null=True)
     COUNTRY = models.ForeignKey(CountryMaster, related_name='ImportTable_COUNTRY',
                  on_delete=models.CASCADE, blank=True, null=True)
-    
-
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(
             User, related_name='ImportTable_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    owned_by = models.ForeignKey(
-            User, related_name='ImportTable_owned_by',
             on_delete=models.CASCADE, blank=True, null=True)
     updated_by = models.ForeignKey(
             User, related_name='ImportTable_updated_by',
@@ -340,11 +329,10 @@ class ExportTable(models.Model):
     FOUR_DIGIT = models.IntegerField(blank=True, null=True)
     RITC_DISCRIPTION = models.TextField(blank=True, null=True)
     UQC = models.CharField(
-            max_length=5, blank=True, null=True)
+            max_length=60, blank=True, null=True)
     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2,
                  blank=True, null=True)
-    CURRENCY = models.ForeignKey(CurrencyMaster, on_delete=models.CASCADE,
-            blank=True, null=True)
+    CURRENCY = models.TextField(null=True, blank=True)
     UNT_PRICE_FC = models.DecimalField(max_digits=20, decimal_places=7,
             blank=True, null=True)
     INV_VALUE_FC = models.DecimalField(max_digits=20, decimal_places=7,
@@ -364,21 +352,20 @@ class ExportTable(models.Model):
     FOB_USD = models.DecimalField(max_digits=25, decimal_places=10,
         blank=True, null=True)
     EXCHANGE_RATE = models.IntegerField(blank=True, null=True)
-    IMPORTER_NAME = models.CharField(max_length=40, blank=True, null=True)
+    IMPORTER_NAME = models.TextField(blank=True, null=True)
     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
-    COUNTRY_OF_ORIGIN = models.ForeignKey(CountryMaster, on_delete=models.CASCADE,
-            blank=True, null=True)
+    COUNTRY_OF_ORIGIN = models.TextField(blank=True, null=True)
     PORT_OF_LOADING = models.TextField(blank=True, null=True)
     PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
-    PORT_CODE = models.CharField(max_length=10, blank=True, null=True)
-    MODE_OF_PORT  = models.CharField(max_length=5, blank=True, null=True)
-    EXPORTER_ID = models.CharField(max_length=15, blank=True, null=True)
+    PORT_CODE = models.CharField(max_length=60, blank=True, null=True)
+    MODE_OF_PORT  = models.CharField(max_length=60, blank=True, null=True)
+    EXPORTER_ID = models.TextField(blank=True, null=True)
     EXPORTER_NAME = models.TextField(blank=True, null=True)
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     EXPORTER_CITY = models.TextField(blank=True, null=True)
     EXPORTER_STATE = models.TextField(blank=True, null=True)
-    EXPORTER_PIN = models.CharField(max_length=10, blank=True, null=True)
-    EXPORTER_PHONE = models.CharField(max_length=15, blank=True, null=True)
+    EXPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
+    EXPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
     EXPORTER_EMAIL = models.TextField(blank=True, null=True)
     EXPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     COUNTRY = models.ForeignKey(CountryMaster, related_name='ExportTable_COUNTRY',
@@ -387,9 +374,6 @@ class ExportTable(models.Model):
     is_deleted = models.BooleanField(default=False)
     created_by = models.ForeignKey(
             User, related_name='ExportTable_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    owned_by = models.ForeignKey(
-            User, related_name='ExportTable_owned_by',
             on_delete=models.CASCADE, blank=True, null=True)
     updated_by = models.ForeignKey(
             User, related_name='ExportTable_updated_by',
@@ -426,10 +410,8 @@ class ProductMaster(models.Model):
 
 
 class CompanyMaster(models.Model):
-    iec_code = models.CharField(
-        max_length=15, blank=True, null=True)
-    name = models.CharField(
-        max_length=50, blank=True, null=True)
+    iec_code = models.TextField(blank=True, null=True)
+    name = models.TextField(blank=True, null=True)
 
     is_deleted = models.BooleanField(default=False)
     location = models.CharField(

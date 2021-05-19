@@ -1,7 +1,11 @@
-from rest_framework import serializers
+from rest_framework import serializers, fields
 from core_module.models import ImportTable, ExportTable, Plans,\
-    ProductMaster, CompanyMaster
+    ProductMaster, CompanyMaster, CountryMaster
 
+file_choice_field = [
+    ("import", "Import"),
+    ("export", "Export")
+]
 
 class PlansListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,4 +62,38 @@ class CompanyImportSerializer(serializers.Serializer):
         fields = (
             'company_file'
         )
+
+
+class ExportImportUploadSerializer(serializers.Serializer):
+
+    file = serializers.FileField(
+        required=True
+    )
+    type_of_sheet = fields.ChoiceField(
+        choices=file_choice_field,
+        required=True
+    )
+    country_id = serializers.IntegerField(
+        required=True,
+        allow_null=False
+    )
+
+    def validate_country_id(self, country_id):
+        if not CountryMaster.objects.filter(id=country_id):
+            raise serializers.ValidationError("Invalid Country id")
+        return country_id
+
+
+    class Meta:
+        fields = (
+            'file', 'type_of_sheet', ' country_id'
+        )
+
+
+class CountryListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CountryMaster
+        fields = ('id', 'name')
+
 
