@@ -1,36 +1,23 @@
-import uuid
-from rest_framework import generics
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.settings import api_settings
-from django.db import transaction
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import get_user_model
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.response import Response
-from rest_framework import status
-from core_module.models import Profile, User, Plans, ImportTable, \
-    CurrencyMaster, CountryMaster, ExportTable, ProductMaster, \
-    CompanyMaster
-from rest_framework.exceptions import APIException
-from datetime import datetime
-import time
-from django.core.files.storage import FileSystemStorage
-from import_export.serializers import ExcelDataImportSerializer, \
-    PlansListSerializer, ImportViewSerializer, ExportViewSerializer, \
-    ProductMasterSerializer, CompanyMasterSerializer, ProductImportSerializer, CompanyImportSerializer, \
-    ExportImportUploadSerializer, CountryListSerializer
-from dalyne.settings import MEDIA_URL
-import xlrd
-from rest_framework.pagination import LimitOffsetPagination
-from django.conf import settings
-from django.core.paginator import Paginator
-import json
 import os
-from custom_decorator import response_modify_decorator_post, \
-    response_modify_decorator_get_after_execution, \
-    response_decorator_list_or_get_after_execution_onoff_pagination, \
-    response_modify_decorator_update
+import uuid
+import xlrd
+
+from core_module.models import Plans, ImportTable, \
+    CountryMaster, ExportTable, ProductMaster, \
+    CompanyMaster
+from custom_decorator import response_modify_decorator_get_after_execution
+from dalyne.settings import MEDIA_URL
+from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
+from django_filters import rest_framework as djfilters
+from import_export.serializers import ProductMasterSerializer, CompanyMasterSerializer, ProductImportSerializer, \
+    CompanyImportSerializer, \
+    ExportImportUploadSerializer, CountryListSerializer, FilterDataSerializer, ImporterDataFilterSerializer, \
+    ExporterDataFilterSerializer
+from rest_framework import status, filters, exceptions, generics
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
 
 class PlansListView(generics.ListAPIView):
@@ -241,114 +228,6 @@ class ExcelDataImportView(generics.CreateAPIView):
             )
 
 
-class ImportExportListView(generics.GenericAPIView):
-    permission_classes = [AllowAny]
-    parser_classes = (MultiPartParser, FormParser, JSONParser)
-    pagination_class = LimitOffsetPagination
-
-    def get(self, request):
-        PageExists = False
-        total_record = 0
-        limit = request.GET.get('limit', settings.PAGINATION_LIMIT)
-        page = request.GET.get('page', settings.PAGINATION_OFFSET)
-        result = []
-        response = {}
-        search_key = request.GET.get('q', "")
-        order_by_querystring = request.GET.get('order_by')
-        columnname_querystring = request.GET.get('colname')
-        data_type = request.GET.get('data_type', 'import')
-        country = request.GET.get('country')
-        filter_params = request.GET.get('filter_params', [])
-        type_str = ""
-        and_filter = {}
-        filter_params = json.loads(filter_params) if filter_params else []
-
-        if len(filter_params) > 0:
-            for param in filter_params:
-                print(param)
-                and_filter[param['field'] + "__" + param['condition']] = param['value']
-
-        if data_type == 'import':
-            queryset = ImportTable.objects.filter(COUNTRY_OF_ORIGIN_id=country, **and_filter)
-            type_str = "Import"
-        else:
-            queryset = ExportTable.objects.filter(COUNTRY_OF_ORIGIN_id=country, **and_filter)
-            type_str = "Export"
-
-        if queryset.count() > 0:
-            if limit is None or limit == '' or str(limit) == str(0):
-                limit = queryset.count()
-            if page is None or page is '' or page is 0:
-                page = 1
-
-            record_size = int(limit)
-            paginator = Paginator(queryset, int(record_size))
-            total_record = paginator.count
-            all_data = paginator.get_page(page)
-            all_data = all_data.object_list
-            try:
-                PageExists = paginator.page(page)
-            except InvalidPage:
-                PageExists = False
-
-            if PageExists:
-                # paginator = LimitOffsetPagination()
-                # result_page = paginator.paginate_queryset(queryset,request)
-                if data_type == 'import':
-                    serializer_class = ImportViewSerializer(all_data, many=True)
-                else:
-                    serializer_class = ExportViewSerializer(all_data, many=True)
-                result = serializer_class.data
-
-                response = {'status_code': status.HTTP_200_OK, "message": type_str + " Records", "result": result,
-                            "RecordsCount": total_record}
-            else:
-                response = {"status_code": status.HTTP_200_OK, "message": "No data found!", "result": [],
-                            "RecordsCount": total_record}
-
-        else:
-            response = {"status_code": status.HTTP_200_OK, "message": "No data found!", "result": [], "RecordsCount": 0}
-        return Response(response)
-
-
-class ProductFilterListView(generics.ListAPIView):
-    permission_classes = [AllowAny]
-    parser_classes = (MultiPartParser, FormParser, JSONParser)
-
-    def get(self, request):
-        response = {}
-        dataresult = []
-
-        search_value = request.GET.get('search_value', "")
-        if search_value != "":
-            queryset = ProductMaster.objects.filter(is_deleted=False, description__icontains=search_value)
-            serializer_class = ProductMasterSerializer(queryset, many=True)
-            dataresult = serializer_class.data
-            response = {'status_code': status.HTTP_200_OK, 'result': dataresult}
-        else:
-            response = {'status_code': status.HTTP_400_BAD_REQUEST, 'result': dataresult}
-        return Response(response)
-
-
-class CompanyFilterListView(generics.ListAPIView):
-    permission_classes = [AllowAny]
-    parser_classes = (MultiPartParser, FormParser, JSONParser)
-
-    def get(self, request):
-        response = {}
-        dataresult = []
-
-        search_value = request.GET.get('search_value', "")
-        if search_value != "":
-            queryset = CompanyMaster.objects.filter(is_deleted=False, name__istartswith=search_value)
-            serializer_class = CompanyMasterSerializer(queryset, many=True)
-            dataresult = serializer_class.data
-            response = {'status_code': status.HTTP_200_OK, 'result': dataresult}
-        else:
-            response = {'status_code': status.HTTP_400_BAD_REQUEST, 'result': dataresult}
-        return Response(response)
-
-
 class ProductDataImportAPI(generics.CreateAPIView):
     serializer_class = ProductImportSerializer
     permission_classes = (IsAuthenticated,)
@@ -460,4 +339,164 @@ class CountriesListAPI(generics.ListAPIView):
     serializer_class = CountryListSerializer
 
     def get_queryset(self):
-        return CountryMaster.objects.all()
+        return CountryMaster.objects.filter(is_deleted=False)
+
+    def list(self, request, *args, **kwargs):
+        """ custom list method """
+        if request.query_params.get('remove_pagination'):
+            self.pagination_class = None
+        return super(CountriesListAPI, self).list(request, *args, **kwargs)
+
+
+class ProductListAPI(generics.ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ProductMasterSerializer
+    filter_backends = (djfilters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter,
+                       )
+    search_fields = ('description',)
+
+    def get_queryset(self):
+        return ProductMaster.objects.filter(is_deleted=False)
+
+    def list(self, request, *args, **kwargs):
+        """ custom list method """
+        if request.query_params.get('remove_pagination'):
+            self.pagination_class = None
+        return super(ProductListAPI, self).list(request, *args, **kwargs)
+
+
+class CompanyListAPI(generics.ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = CompanyMasterSerializer
+    filter_backends = (djfilters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter,
+                       )
+    search_fields = ('name',)
+    model = CompanyMaster
+
+    def get_queryset(self):
+        return self.model.objects.filter(is_deleted=False)
+
+    def list(self, request, *args, **kwargs):
+        """ custom list method """
+        if request.query_params.get('remove_pagination'):
+            self.pagination_class = None
+        return super(CompanyListAPI, self).list(request, *args, **kwargs)
+
+
+class AdvancedSearchAPI(generics.ListAPIView):
+    permission_classes = (AllowAny,)
+    filter_backends = (djfilters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter,
+                       )
+    serializer_class = FilterDataSerializer
+
+    def get_queryset(self):
+        request_serializer = self.serializer_class(data=self.request.data)
+        if request_serializer.is_valid(raise_exception=True):
+            country = request_serializer.validated_data.get("country")
+            start_date = request_serializer.validated_data.get("start_date")
+            end_date = request_serializer.validated_data.get("end_date")
+            operator_type = request_serializer.validated_data.get("operator_type")
+            search_field = request_serializer.validated_data.get("search_field")
+            search_value = request_serializer.validated_data.get("search_value")
+
+            if request_serializer.validated_data.get("data_type") == "export":
+                model = ExportTable
+                queryset = model.objects.filter(COUNTRY__name=country, SB_DATE__date__gte=start_date,
+                                                SB_DATE__date__lte=end_date)
+            else:
+                model = ImportTable
+                queryset = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
+                                                BE_DATE__date__lte=end_date)
+
+            if operator_type == "contains":
+                if search_field == "hs_code":
+                    queryset = queryset.filter(TWO_DIGIT__icontains=search_value)
+                if search_field == "importer_name":
+                    queryset = queryset.filter(IMPORTER_NAME__icontains=search_value)
+                if search_field == "exporter_name":
+                    queryset = queryset.filter(EXPORTER_NAME__icontains=search_value)
+                if search_field == "product":
+                    product_qs = ProductMaster.objects.filter(description=search_value).first()
+                    product_hs_code = product_qs.hs_code
+                    queryset = queryset.filter(Q(TWO_DIGIT=int(product_hs_code)) |
+                                               Q(FOUR_DIGIT=int(product_hs_code)) |
+                                               Q(RITC=int(product_hs_code)))
+
+                if search_field == "hs_4_digit_code":
+                    queryset = queryset.filter(FOUR_DIGIT__icontains=search_value)
+                if search_field == "iec_code":
+                    if model == ExportTable:
+                        queryset = queryset.filter(EXPORTER_ID__icontains=search_value)
+                    if model == ImportTable:
+                        queryset = queryset.filter(IMPORTER_ID__icontains=search_value)
+
+            elif operator_type == "exact":
+                if search_field == "hs_code":
+                    queryset = queryset.filter(TWO_DIGIT=search_value)
+                if search_field == "importer_name":
+                    queryset = queryset.filter(IMPORTER_NAME=search_value)
+                if search_field == "exporter_name":
+                    queryset = queryset.filter(EXPORTER_NAME=search_value)
+                if search_field == "product":
+                    product_qs = ProductMaster.objects.filter(description=search_value).first()
+                    product_hs_code = product_qs.hs_code
+                    queryset = queryset.filter(Q(TWO_DIGIT=int(product_hs_code)) |
+                                               Q(FOUR_DIGIT=int(product_hs_code)) |
+                                               Q(RITC=int(product_hs_code)))
+                if search_field == "hs_4_digit_code":
+                    queryset = queryset.filter(FOUR_DIGIT=search_value)
+                if search_field == "iec_code":
+                    if model == ExportTable:
+                        queryset = queryset.filter(EXPORTER_ID=search_value)
+                    if model == ImportTable:
+                        queryset = queryset.filter(IMPORTER_ID=search_value)
+
+            elif operator_type == "partial":
+                if search_field == "hs_code":
+                    queryset = queryset.filter(Q(TWO_DIGIT__istartswith=search_value) |
+                                               Q(TWO_DIGIT__iendswith=search_value))
+                if search_field == "importer_name":
+                    queryset = queryset.filter(Q(IMPORTER_NAME__istartswith=search_value) |
+                                               Q(IMPORTER_NAME__iendswith=search_value))
+                if search_field == "exporter_name":
+                    queryset = queryset.filter(Q(EXPORTER_NAME__istartswith=search_value) |
+                                               Q(EXPORTER_NAME__iendswith=search_value))
+                if search_field == "product":
+                    product_qs = ProductMaster.objects.filter(description=search_value).first()
+                    product_hs_code = product_qs.hs_code
+                    queryset = queryset.filter(Q(TWO_DIGIT=int(product_hs_code)) |
+                                               Q(FOUR_DIGIT=int(product_hs_code)) |
+                                               Q(RITC=int(product_hs_code)))
+                if search_field == "hs_4_digit_code":
+                    queryset = queryset.filter(Q(TWO_DIGIT__istartswith=search_value) |
+                                               Q(TWO_DIGIT__iendswith=search_value))
+                if search_field == "iec_code":
+                    if model == ExportTable:
+                        queryset = queryset.filter(Q(EXPORTER_ID__istartswith=search_value) |
+                                                   Q(EXPORTER_ID__iendswith=search_value))
+                    if model == ImportTable:
+                        queryset = queryset.filter(Q(IMPORTER_ID__istartswith=search_value) |
+                                                   Q(IMPORTER_ID__iendswith=search_value))
+            return queryset
+        else:
+            raise exceptions.ValidationError(
+                request_serializer.error
+            )
+
+    def get_serializer_class(self):
+        if self.request.data.get("data_type") == "export":
+            return ExporterDataFilterSerializer
+        elif self.request.data.get("data_type") == "import":
+            return ImporterDataFilterSerializer
+
+    def list(self, request, *args, **kwargs):
+        """ custom list method """
+        if request.query_params.get('remove_pagination'):
+            self.pagination_class = None
+        return super(AdvancedSearchAPI, self).list(request, *args, **kwargs)

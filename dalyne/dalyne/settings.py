@@ -46,6 +46,10 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'ORDERING_PARAM': 'ordering',
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
+
 }
 
 MIDDLEWARE = [
@@ -81,8 +85,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'dalyne.wsgi.application'
 
 AUTH_USER_MODEL = 'core_module.User'
+
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DB_ENGINE'),
