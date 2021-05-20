@@ -19,6 +19,9 @@ if not ENV_CELERY_BROKER_URL or  len(ENV_CELERY_BROKER_URL) == 0:
 DEBUG = int(os.environ.get("DEBUG", default=0))
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
+
+CORS_ORIGIN_ALLOW_ALL = True
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -56,16 +59,15 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_HEADERS = [
 'accept',
