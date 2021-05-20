@@ -335,7 +335,7 @@ class CompanyDataImportAPI(generics.CreateAPIView):
 
 
 class CountriesListAPI(generics.ListAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = CountryListSerializer
 
     def get_queryset(self):
@@ -349,7 +349,7 @@ class CountriesListAPI(generics.ListAPIView):
 
 
 class ProductListAPI(generics.ListAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProductMasterSerializer
     filter_backends = (djfilters.DjangoFilterBackend,
                        filters.SearchFilter,
@@ -368,7 +368,7 @@ class ProductListAPI(generics.ListAPIView):
 
 
 class CompanyListAPI(generics.ListAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = CompanyMasterSerializer
     filter_backends = (djfilters.DjangoFilterBackend,
                        filters.SearchFilter,
@@ -401,7 +401,6 @@ class AdvancedSearchAPI(generics.ListAPIView):
             country = request_serializer.validated_data.get("country")
             start_date = request_serializer.validated_data.get("start_date")
             end_date = request_serializer.validated_data.get("end_date")
-            operator_type = request_serializer.validated_data.get("operator_type")
             search_field = request_serializer.validated_data.get("search_field")
             search_value = request_serializer.validated_data.get("search_value")
 
@@ -413,76 +412,29 @@ class AdvancedSearchAPI(generics.ListAPIView):
                 model = ImportTable
                 queryset = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
                                                 BE_DATE__date__lte=end_date)
+            if search_field == "hs_code":
+                queryset = queryset.filter(TWO_DIGIT__in=search_value)
+            if search_field == "importer_name":
+                queryset = queryset.filter(IMPORTER_NAME__in=search_value)
+            if search_field == "exporter_name":
+                queryset = queryset.filter(EXPORTER_NAME__in=search_value)
+            if search_field == "product":
+                product_qs = ProductMaster.objects.filter(description__in=search_value)
+                hs_code_list = list()
+                for obj in product_qs:
+                    hs_code_list.append(obj.hs_code)
+                # hs_codes = [int(val) for val in hs_code_list]
+                queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
+                                           Q(FOUR_DIGIT__in=hs_code_list) |
+                                           Q(RITC__in=hs_code_list))
+            if search_field == "hs_4_digit_code":
+                queryset = queryset.filter(FOUR_DIGIT=search_value)
+            if search_field == "iec_code":
+                if model == ExportTable:
+                    queryset = queryset.filter(EXPORTER_ID__in=search_value)
+                if model == ImportTable:
+                    queryset = queryset.filter(IMPORTER_ID__in=search_value)
 
-            if operator_type == "contains":
-                if search_field == "hs_code":
-                    queryset = queryset.filter(TWO_DIGIT__icontains=search_value)
-                if search_field == "importer_name":
-                    queryset = queryset.filter(IMPORTER_NAME__icontains=search_value)
-                if search_field == "exporter_name":
-                    queryset = queryset.filter(EXPORTER_NAME__icontains=search_value)
-                if search_field == "product":
-                    product_qs = ProductMaster.objects.filter(description=search_value).first()
-                    product_hs_code = product_qs.hs_code
-                    queryset = queryset.filter(Q(TWO_DIGIT=int(product_hs_code)) |
-                                               Q(FOUR_DIGIT=int(product_hs_code)) |
-                                               Q(RITC=int(product_hs_code)))
-
-                if search_field == "hs_4_digit_code":
-                    queryset = queryset.filter(FOUR_DIGIT__icontains=search_value)
-                if search_field == "iec_code":
-                    if model == ExportTable:
-                        queryset = queryset.filter(EXPORTER_ID__icontains=search_value)
-                    if model == ImportTable:
-                        queryset = queryset.filter(IMPORTER_ID__icontains=search_value)
-
-            elif operator_type == "exact":
-                if search_field == "hs_code":
-                    queryset = queryset.filter(TWO_DIGIT=search_value)
-                if search_field == "importer_name":
-                    queryset = queryset.filter(IMPORTER_NAME=search_value)
-                if search_field == "exporter_name":
-                    queryset = queryset.filter(EXPORTER_NAME=search_value)
-                if search_field == "product":
-                    product_qs = ProductMaster.objects.filter(description=search_value).first()
-                    product_hs_code = product_qs.hs_code
-                    queryset = queryset.filter(Q(TWO_DIGIT=int(product_hs_code)) |
-                                               Q(FOUR_DIGIT=int(product_hs_code)) |
-                                               Q(RITC=int(product_hs_code)))
-                if search_field == "hs_4_digit_code":
-                    queryset = queryset.filter(FOUR_DIGIT=search_value)
-                if search_field == "iec_code":
-                    if model == ExportTable:
-                        queryset = queryset.filter(EXPORTER_ID=search_value)
-                    if model == ImportTable:
-                        queryset = queryset.filter(IMPORTER_ID=search_value)
-
-            elif operator_type == "partial":
-                if search_field == "hs_code":
-                    queryset = queryset.filter(Q(TWO_DIGIT__istartswith=search_value) |
-                                               Q(TWO_DIGIT__iendswith=search_value))
-                if search_field == "importer_name":
-                    queryset = queryset.filter(Q(IMPORTER_NAME__istartswith=search_value) |
-                                               Q(IMPORTER_NAME__iendswith=search_value))
-                if search_field == "exporter_name":
-                    queryset = queryset.filter(Q(EXPORTER_NAME__istartswith=search_value) |
-                                               Q(EXPORTER_NAME__iendswith=search_value))
-                if search_field == "product":
-                    product_qs = ProductMaster.objects.filter(description=search_value).first()
-                    product_hs_code = product_qs.hs_code
-                    queryset = queryset.filter(Q(TWO_DIGIT=int(product_hs_code)) |
-                                               Q(FOUR_DIGIT=int(product_hs_code)) |
-                                               Q(RITC=int(product_hs_code)))
-                if search_field == "hs_4_digit_code":
-                    queryset = queryset.filter(Q(TWO_DIGIT__istartswith=search_value) |
-                                               Q(TWO_DIGIT__iendswith=search_value))
-                if search_field == "iec_code":
-                    if model == ExportTable:
-                        queryset = queryset.filter(Q(EXPORTER_ID__istartswith=search_value) |
-                                                   Q(EXPORTER_ID__iendswith=search_value))
-                    if model == ImportTable:
-                        queryset = queryset.filter(Q(IMPORTER_ID__istartswith=search_value) |
-                                                   Q(IMPORTER_ID__iendswith=search_value))
             return queryset
         else:
             raise exceptions.ValidationError(

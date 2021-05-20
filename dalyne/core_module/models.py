@@ -246,9 +246,9 @@ class ImportTable(models.Model):
     MONTH = models.CharField(
             max_length=10, blank=True, null=True)
     YEAR = models.IntegerField(blank=True, null=True)
-    RITC = models.BigIntegerField(blank=True, null=True)
-    TWO_DIGIT = models.IntegerField(blank=True, null=True)
-    FOUR_DIGIT = models.IntegerField(blank=True, null=True)
+    RITC = models.TextField(blank=True, null=True)
+    TWO_DIGIT = models.TextField(blank=True, null=True)
+    FOUR_DIGIT = models.TextField(blank=True, null=True)
     RITC_DISCRIPTION = models.TextField(blank=True, null=True)
     UQC = models.CharField(
             max_length=60, blank=True, null=True)
@@ -324,9 +324,9 @@ class ExportTable(models.Model):
     MONTH = models.CharField(
             max_length=10, blank=True, null=True)
     YEAR = models.IntegerField(blank=True, null=True)
-    RITC = models.BigIntegerField(blank=True, null=True)
-    TWO_DIGIT = models.IntegerField(blank=True, null=True)
-    FOUR_DIGIT = models.IntegerField(blank=True, null=True)
+    RITC = models.TextField(blank=True, null=True)
+    TWO_DIGIT = models.TextField(blank=True, null=True)
+    FOUR_DIGIT = models.TextField(blank=True, null=True)
     RITC_DISCRIPTION = models.TextField(blank=True, null=True)
     UQC = models.CharField(
             max_length=60, blank=True, null=True)

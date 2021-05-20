@@ -16,12 +16,6 @@ search_choice_field = [
     ("iec_code", "IEC code")
 ]
 
-operator_field = [
-    ("contains", "Contains"),
-    ("exact", "Exact"),
-    ("partial", "partial")
-]
-
 
 class PlansListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -153,11 +147,7 @@ class FilterDataSerializer(serializers.Serializer):
         choices=search_choice_field,
         required=True
     )
-    operator_type = fields.ChoiceField(
-        choices=operator_field,
-        required=True
-    )
-    search_value = serializers.CharField(
+    search_value = serializers.ListField(
         required=True
     )
 
