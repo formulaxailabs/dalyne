@@ -142,7 +142,7 @@ class ProductDataImportAPI(generics.CreateAPIView):
 
 class CompanyDataImportAPI(generics.CreateAPIView):
     serializer_class = CompanyImportSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     parser_classes = (FormParser, MultiPartParser)
 
     def create(self, request, *args, **kwargs):
@@ -156,10 +156,13 @@ class CompanyDataImportAPI(generics.CreateAPIView):
                 serializer.validated_data.get('company_file'))
             file_path = MEDIA_URL + 'import_export/' + filename
             cwd = os.getcwd()
-            full_path = f"{cwd}{file_path}"
+            cwd.replace("/", "")
+            full_path = f"{cwd}/{file_path}"
+            print(f"Full Path: {full_path}")
+            print(f"File Path: {file_path}")
 
             if file_extension == 'xls' or file_extension == 'xlsx':
-                upload_company_file_async.delay(
+                upload_company_file_async.run(
                     full_path=full_path,
                     user_id=self.request.user.id
                 )
