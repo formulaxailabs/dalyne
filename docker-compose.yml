@@ -39,7 +39,7 @@ services:
     
   celery_worker:
     build: .
-    command: celery -A dalyne worker --loglevel=info --logfile=logs/celery.log
+    command: celery -A dalyne worker --loglevel=info
     env_file:
       - ./.env
     links:
@@ -55,7 +55,7 @@ services:
 
   celery_beat:
     build: .
-    command: celery -A dalyne beat --loglevel=info --logfile=logs/celery.log
+    command: celery -A dalyne beat --loglevel=info
     env_file:
       - ./.env
     links:
