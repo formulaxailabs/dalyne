@@ -74,7 +74,7 @@ def response_modify_decorator_list_after_execution(func):
 
         response = func(self, request, *args, **kwargs)
         data_dict = {}
-        data_dict['result'] = response.data
+        # data_dict['result'] = response.data
         if response.data:
             data_dict['request_status'] = 1
             data_dict['msg'] = settings.MSG_SUCCESS
