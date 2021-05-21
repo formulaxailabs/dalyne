@@ -156,7 +156,7 @@ class CompanyDataImportAPI(generics.CreateAPIView):
                 serializer.validated_data.get('company_file'))
             file_path = MEDIA_URL + 'import_export/' + filename
             cwd = os.getcwd()
-            full_path = f"{cwd}/{file_path}"
+            full_path = f"{cwd}{file_path}"
 
             if file_extension == 'xls' or file_extension == 'xlsx':
                 upload_company_file_async.delay(
