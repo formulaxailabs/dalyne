@@ -37,37 +37,37 @@ services:
     networks:
       - redis_network
     
-  # celery_worker:
-  #   build: .
-  #   command: celery -A dalyne worker --loglevel=info --logfile=logs/celery.log
-  #   env_file:
-  #     - ./.env
-  #   links:
-  #     - dalyne-db
-  #     - redis
-  #   depends_on:
-  #     - dalyne-db
-  #     - dalyne-backend
-  #     - redis
-  #   networks:
-  #     - database_network
-  #     - redis_network
+   celery_worker:
+     build: .
+     command: celery -A dalyne worker --loglevel=info --logfile=logs/celery.log
+     env_file:
+       - ./.env
+     links:
+       - dalyne-db
+       - redis
+     depends_on:
+       - dalyne-db
+       - dalyne-backend
+       - redis
+     networks:
+       - database_network
+       - redis_network
 
-  # celery_beat:
-  #   build: .
-  #   command: celery -A dalyne beat --loglevel=info --logfile=logs/celery.log
-  #   env_file:
-  #     - ./.env
-  #   links:
-  #     - dalyne-db
-  #     - redis
-  #   depends_on:
-  #     - dalyne-db
-  #     - dalyne-backend
-  #     - redis
-  #   networks:
-  #     - database_network
-  #     - redis_network
+   celery_beat:
+     build: .
+     command: celery -A dalyne beat --loglevel=info --logfile=logs/celery.log
+     env_file:
+       - ./.env
+     links:
+       - dalyne-db
+       - redis
+     depends_on:
+       - dalyne-db
+       - dalyne-backend
+       - redis
+     networks:
+       - database_network
+       - redis_network
 
   nginx:
     build: ./nginx
