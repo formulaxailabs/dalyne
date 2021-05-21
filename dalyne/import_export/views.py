@@ -62,7 +62,7 @@ class ExcelDataImportView(generics.CreateAPIView):
             file = serializer.validated_data['file']
             file_extension = file_name.split('.')[1].lower()
             if file_extension == 'xls' or file_extension == 'xlsx':
-                upload_excel_file_async.run(
+                upload_excel_file_async.delay(
                     country_id=country_id, user_id=self.request.user.id,
                     file_name=file_name, data_type=serializer.validated_data['type_of_sheet'],
                     file=file
@@ -148,7 +148,7 @@ class CompanyDataImportAPI(generics.CreateAPIView):
             company_file = serializer.validated_data['company_file']
             file_extension = file_name.split('.')[1].lower()
             if file_extension == 'xls' or file_extension == 'xlsx':
-                upload_company_file_async.run(
+                upload_company_file_async.delay(
                     file_name=file_name,
                     company_file=company_file,
                     user_id=self.request.user.id
