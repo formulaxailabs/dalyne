@@ -1,6 +1,6 @@
 from rest_framework import serializers, fields
 from core_module.models import ImportTable, ExportTable, Plans,\
-    ProductMaster, CompanyMaster, CountryMaster
+    ProductMaster, CompanyMaster, CountryMaster, FilterDataModel
 
 file_choice_field = [
     ("import", "Import"),
@@ -112,7 +112,7 @@ class ImporterDataFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ImportTable
-        fields = ('TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'BE_NO', 'IMPORTER_NAME',
+        fields = ('RITC', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'BE_NO', 'IMPORTER_NAME',
                   'EXPORTER_NAME', 'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT',
                   'PORT_CODE', 'MONTH', 'YEAR')
 
@@ -121,17 +121,17 @@ class ExporterDataFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExportTable
-        fields = ('TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'SB_NO', 'IMPORTER_NAME',
+        fields = ('RITC', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'SB_NO', 'IMPORTER_NAME',
                   'EXPORTER_NAME', 'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT',
                   'PORT_CODE', 'MONTH', 'YEAR')
 
 
-class FilterDataSerializer(serializers.Serializer):
+class FilterDataSerializer(serializers.ModelSerializer):
     data_type = fields.ChoiceField(
         choices=file_choice_field,
         required=True
     )
-    country = serializers.CharField(
+    country = serializers.IntegerField(
         required=True,
         allow_null=False
     )
@@ -150,5 +150,75 @@ class FilterDataSerializer(serializers.Serializer):
     search_value = serializers.ListField(
         required=True
     )
+    tenant = serializers.IntegerField(
+        required=True,
+        allow_null=False
+    )
+
+    class Meta:
+        model = FilterDataModel
+        fields = ('tenant', 'data_type', 'country', 'start_date', 'end_date', 'search_field', 'search_value')
+
+
+class AddWorkSpaceSerializer(serializers.ModelSerializer):
+    search_id = serializers.IntegerField(
+        required=True,
+        allow_null=False
+    )
+    workspace_name = serializers.CharField(
+        required=True,
+        allow_null=False
+    )
+
+    def validate_search_id(self, search_id):
+        if not FilterDataModel.objects.filter(id=search_id):
+            raise serializers.ValidationError("Invalid search id")
+        return search_id
+
+    class Meta:
+        model = FilterDataModel
+        fields = ('search_id', 'workspace_name')
+
+
+class WorkSpaceSerializer(serializers.ModelSerializer):
+    workspace_name = serializers.CharField(
+        required=False,
+        allow_null=True
+    )
+    search_id = serializers.SerializerMethodField()
+
+    def get_search_id(self, obj):
+        return obj.id
+
+    class Meta:
+        model = FilterDataModel
+        fields = ('search_id', 'workspace_name', 'tenant', 'data_type', 'country', 'start_date', 'end_date',
+                  'search_field', 'search_value', 'is_active'
+                  )
+
+
+class WorkSpacePatchSerializer(serializers.ModelSerializer):
+    search_id = serializers.SerializerMethodField()
+
+    def get_search_id(self, obj):
+        return obj.id
+
+    class Meta:
+        model = FilterDataModel
+        fields = ('search_id', 'workspace_name', 'tenant', 'data_type', 'country', 'start_date', 'end_date',
+                  'search_field', 'search_value', 'is_active')
+
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'tenant': {'read_only': True},
+            'data_type': {'read_only': True},
+            'country': {'read_only': True},
+            'start_date': {'read_only': True},
+            'end_date': {'read_only': True},
+            'search_field': {'read_only': True},
+            'search_value': {'read_only': True}
+        }
+
+
 
 

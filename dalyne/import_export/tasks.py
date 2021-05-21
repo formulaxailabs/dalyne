@@ -4,11 +4,20 @@ import uuid
 from core_module.models import ImportTable, ExportTable,CompanyMaster,User, CountryMaster
 from dalyne import celery_app
 from django.db.models import Q
+from dalyne.settings import MEDIA_URL
+from django.core.files.storage import FileSystemStorage
 
 
 @celery_app.task(bind=True)
-def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
+def upload_excel_file_async(self, country_id, user_id, file_name, data_type, file):
     try:
+        fs = FileSystemStorage('media/import_export/')
+        file_extension = file_name.split('.')[1].lower()
+        filename = fs.save(
+            file_name.split('.')[0].lower() + '_' + str(str(uuid.uuid4())[-4:]) + '.' + file_extension, file
+        )
+        full_path = f"{fs.location}/{filename}"
+        print(f"Full Path {full_path}")
         country_obj = CountryMaster.objects.get(id=country_id)
         user_obj = User.objects.get(id=user_id)
         book = xlrd.open_workbook(full_path)
@@ -162,8 +171,15 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
 
 
 @celery_app.task(bind=True)
-def upload_company_file_async(self, full_path, user_id):
+def upload_company_file_async(self, file_name, company_file,user_id):
     try:
+        fs = FileSystemStorage('media/import_export/')
+        file_extension = file_name.split('.')[1].lower()
+        filename = fs.save(
+            file_name.split('.')[0].lower() + '_' + str(str(uuid.uuid4())[-4:]) + '.' + file_extension, company_file
+        )
+        full_path = f"{fs.location}/{filename}"
+        print(f"Full Path {full_path}")
         user_obj = User.objects.get(id=user_id)
         book = xlrd.open_workbook(full_path)
         sheet_obj = book.sheet_by_index(0)

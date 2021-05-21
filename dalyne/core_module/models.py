@@ -446,3 +446,67 @@ class MailTemplate(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class FilterDataModel(models.Model):
+    data_type = models.CharField(
+        blank=True,
+        null=True,
+        max_length=15
+    )
+    country = models.ForeignKey(
+        CountryMaster,
+        related_name='filter_data_country',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    start_date = models.DateField(
+        null=True,
+        blank=True
+    )
+    end_date = models.DateField(
+        null=True,
+        blank=True
+    )
+    search_field = models.CharField(
+        blank=True,
+        null=True,
+        max_length=50
+    )
+    search_value = models.JSONField(
+        default=list
+    )
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    created_by = models.ForeignKey(
+        User,
+        related_name='admin_user',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+    workspace_name = models.CharField(
+        null=True,
+        blank=True,
+        max_length=256
+    )
+    total_count = models.JSONField(
+        default=dict
+    )
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    def deactivate_workspace(self):
+        self.is_active = False

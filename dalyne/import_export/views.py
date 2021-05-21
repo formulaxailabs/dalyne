@@ -4,17 +4,18 @@ import xlrd
 
 from core_module.models import Plans, ImportTable, \
     CountryMaster, ExportTable, ProductMaster, \
-    CompanyMaster
+    CompanyMaster, FilterDataModel, Tenant
 from custom_decorator import response_modify_decorator_get_after_execution
 from dalyne.settings import MEDIA_URL
 from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
 from django_filters import rest_framework as djfilters
+from drf_yasg.utils import swagger_auto_schema
 from import_export.serializers import ProductMasterSerializer, CompanyMasterSerializer, ProductImportSerializer, \
     CompanyImportSerializer, \
     ExportImportUploadSerializer, CountryListSerializer, FilterDataSerializer, ImporterDataFilterSerializer, \
-    ExporterDataFilterSerializer
-from rest_framework import status, filters, exceptions, generics
+    ExporterDataFilterSerializer, WorkSpaceSerializer, AddWorkSpaceSerializer, WorkSpacePatchSerializer
+from rest_framework import status, filters, exceptions, generics, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -49,27 +50,22 @@ class PlansListView(generics.ListAPIView):
 
 
 class ExcelDataImportView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
     serializer_class = ExportImportUploadSerializer
+    permission_classes = (IsAuthenticated,)
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             country_id = serializer.validated_data['country_id']
             file_name = serializer.validated_data['file'].name
-            fs = FileSystemStorage('media/import_export/')
+            file = serializer.validated_data['file']
             file_extension = file_name.split('.')[1].lower()
-            filename = fs.save(
-                file_name.split('.')[0].lower() + '_' + str(str(uuid.uuid4())[-4:]) + '.' + file_extension,
-                serializer.validated_data.get('file'))
-            file_path = MEDIA_URL + 'import_export/' + filename
-            cwd = os.getcwd()
-            full_path = f"{cwd}{file_path}"
             if file_extension == 'xls' or file_extension == 'xlsx':
-                upload_excel_file_async.delay(
+                upload_excel_file_async.run(
                     country_id=country_id, user_id=self.request.user.id,
-                    full_path=full_path, data_type=serializer.validated_data['type_of_sheet']
+                    file_name=file_name, data_type=serializer.validated_data['type_of_sheet'],
+                    file=file
                 )
                 return Response(
                     {'msg': 'Your file will be uploaded shortly to our db'},
@@ -142,28 +138,19 @@ class ProductDataImportAPI(generics.CreateAPIView):
 
 class CompanyDataImportAPI(generics.CreateAPIView):
     serializer_class = CompanyImportSerializer
-    permission_classes = (AllowAny,)
     parser_classes = (FormParser, MultiPartParser)
+    permission_classes = (IsAuthenticated,)
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             file_name = serializer.validated_data['company_file'].name
-            fs = FileSystemStorage('media/import_export/')
+            company_file = serializer.validated_data['company_file']
             file_extension = file_name.split('.')[1].lower()
-            filename = fs.save(
-                file_name.split('.')[0].lower() + '_' + str(str(uuid.uuid4())[-4:]) + '.' + file_extension,
-                serializer.validated_data.get('company_file'))
-            file_path = MEDIA_URL + 'import_export/' + filename
-            cwd = os.getcwd()
-            cwd.replace("/", "")
-            full_path = f"{cwd}/{file_path}"
-            print(f"Full Path: {full_path}")
-            print(f"File Path: {file_path}")
-
             if file_extension == 'xls' or file_extension == 'xlsx':
                 upload_company_file_async.run(
-                    full_path=full_path,
+                    file_name=file_name,
+                    company_file=company_file,
                     user_id=self.request.user.id
                 )
                 return Response({
@@ -236,18 +223,32 @@ class CompanyListAPI(generics.ListAPIView):
         return super(CompanyListAPI, self).list(request, *args, **kwargs)
 
 
-class AdvancedSearchAPI(generics.ListAPIView):
-    permission_classes = (AllowAny,)
+class AdvancedSearchAPI(generics.CreateAPIView):
+    permission_classes = (IsAuthenticated,)
     filter_backends = (djfilters.DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter,
                        )
+    model = FilterDataModel
     serializer_class = FilterDataSerializer
+    parser_classes = (FormParser, MultiPartParser)
 
-    def get_queryset(self):
+    @swagger_auto_schema(
+        request_body=FilterDataSerializer,
+        operation_id="Advanced Search")
+    def create(self, request, *args, **kwargs):
         request_serializer = self.serializer_class(data=self.request.data)
         if request_serializer.is_valid(raise_exception=True):
-            country = request_serializer.validated_data.get("country")
+            country_id = request_serializer.validated_data.pop("country")
+            tenant = request_serializer.validated_data.pop("tenant")
+            obj = request_serializer.save()
+            country_obj = CountryMaster.objects.get(id=country_id)
+            tenant_obj = Tenant.objects.get(id=tenant)
+            obj.country = country_obj
+            obj.tenant = tenant_obj
+            obj.save()
+            resp_dict = dict()
+            country = country_id
             start_date = request_serializer.validated_data.get("start_date")
             end_date = request_serializer.validated_data.get("end_date")
             search_field = request_serializer.validated_data.get("search_field")
@@ -255,11 +256,11 @@ class AdvancedSearchAPI(generics.ListAPIView):
 
             if request_serializer.validated_data.get("data_type") == "export":
                 model = ExportTable
-                queryset = model.objects.filter(COUNTRY__name=country, SB_DATE__date__gte=start_date,
+                queryset = model.objects.filter(COUNTRY__id=country, SB_DATE__date__gte=start_date,
                                                 SB_DATE__date__lte=end_date)
             else:
                 model = ImportTable
-                queryset = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
+                queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
                                                 BE_DATE__date__lte=end_date)
             if search_field == "hs_code":
                 queryset = queryset.filter(TWO_DIGIT__in=search_value)
@@ -272,7 +273,6 @@ class AdvancedSearchAPI(generics.ListAPIView):
                 hs_code_list = list()
                 for obj in product_qs:
                     hs_code_list.append(obj.hs_code)
-                # hs_codes = [int(val) for val in hs_code_list]
                 queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
                                            Q(FOUR_DIGIT__in=hs_code_list) |
                                            Q(RITC__in=hs_code_list))
@@ -284,20 +284,143 @@ class AdvancedSearchAPI(generics.ListAPIView):
                 if model == ImportTable:
                     queryset = queryset.filter(IMPORTER_ID__in=search_value)
 
-            return queryset
+            resp_dict["shipment_count"] = queryset.count()
+            resp_dict["importer_count"] = queryset.distinct("IMPORTER_NAME").count()
+            resp_dict["exporter_count"] = queryset.distinct("EXPORTER_NAME").count()
+            resp_dict["country_origin"] = queryset.distinct("COUNTRY_OF_ORIGIN").count()
+            resp_dict["port_of_destination"] = queryset.distinct("PORT_OF_DISCHARGE").count()
+            resp_dict["hs_code_count"] = queryset.distinct("RITC").count()
+            obj.total_count = resp_dict
+            obj.save()
+            resp_dict["search_id"] = obj.id
+            return Response(
+                resp_dict,
+                status=status.HTTP_201_CREATED
+            )
         else:
             raise exceptions.ValidationError(
                 request_serializer.error
             )
 
+
+class FilterDataGetAPI(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+
     def get_serializer_class(self):
-        if self.request.data.get("data_type") == "export":
-            return ExporterDataFilterSerializer
-        elif self.request.data.get("data_type") == "import":
-            return ImporterDataFilterSerializer
+        search_id = self.request.query_params.get("search_id")
+        search_obj = FilterDataModel.objects.filter(id=search_id).first()
+        if search_obj:
+            if search_obj.data_type == "export":
+                return ExporterDataFilterSerializer
+            elif search_obj.data_type == "import":
+                return ImporterDataFilterSerializer
+
+    def get_queryset(self):
+        search_id = self.request.query_params.get('search_id')
+        if search_id:
+            search_obj = FilterDataModel.objects.filter(id=search_id).first()
+            if search_obj:
+                country = search_obj.country.name
+                start_date = search_obj.start_date
+                end_date = search_obj.end_date
+                search_field = search_obj.search_field
+                search_value = search_obj.search_value
+                data_type = search_obj.data_type
+                if data_type == "export":
+                    model = ExportTable
+                    queryset = model.objects.filter(COUNTRY__name=country, SB_DATE__date__gte=start_date,
+                                                    SB_DATE__date__lte=end_date)
+                else:
+                    model = ImportTable
+                    queryset = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
+                                                    BE_DATE__date__lte=end_date)
+                if search_field == "hs_code":
+                    queryset = queryset.filter(TWO_DIGIT__in=search_value)
+                if search_field == "importer_name":
+                    queryset = queryset.filter(IMPORTER_NAME__in=search_value)
+                if search_field == "exporter_name":
+                    queryset = queryset.filter(EXPORTER_NAME__in=search_value)
+                if search_field == "product":
+                    product_qs = ProductMaster.objects.filter(description__in=search_value)
+                    hs_code_list = list()
+                    for obj in product_qs:
+                        hs_code_list.append(obj.hs_code)
+                    queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
+                                               Q(FOUR_DIGIT__in=hs_code_list) |
+                                               Q(RITC__in=hs_code_list))
+                if search_field == "hs_4_digit_code":
+                    queryset = queryset.filter(FOUR_DIGIT=search_value)
+                if search_field == "iec_code":
+                    if model == ExportTable:
+                        queryset = queryset.filter(EXPORTER_ID__in=search_value)
+                    if model == ImportTable:
+                        queryset = queryset.filter(IMPORTER_ID__in=search_value)
+                return queryset
+            else:
+                return {}
+        else:
+            return {}
 
     def list(self, request, *args, **kwargs):
         """ custom list method """
         if request.query_params.get('remove_pagination'):
             self.pagination_class = None
-        return super(AdvancedSearchAPI, self).list(request, *args, **kwargs)
+        return super(FilterDataGetAPI, self).list(request, *args, **kwargs)
+
+
+class WorkSpaceAPI(viewsets.ModelViewSet):
+    filter_backends = (djfilters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       )
+    search_fields = ('workspace_name',)
+    model = FilterDataModel
+    http_method_names = ('get', 'post', 'patch', 'destroy')
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return self.model.objects.filter(is_active=True)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return WorkSpaceSerializer
+        if self.request.method == 'POST':
+            return AddWorkSpaceSerializer
+        if self.request.method == 'PATCH':
+            return WorkSpacePatchSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer_class()
+        serializer = serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            search_id = serializer.validated_data.pop('search_id')
+            search_obj = FilterDataModel.objects.filter(id=search_id).first()
+            search_obj.workspace_name = serializer.validated_data.get('workspace_name')
+            search_obj.save()
+            return Response({'msg': 'Query successfully saved'},
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer_class()
+        serializer = serializer(data=request.data, instance=instance, partial=partial)
+        if serializer.is_valid(raise_exception=True):
+            self.perform_update(serializer)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.deactivate_workspace()
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
