@@ -245,10 +245,10 @@ class AdvancedSearchAPI(generics.CreateAPIView):
         request_serializer = self.serializer_class(data=self.request.data)
         if request_serializer.is_valid(raise_exception=True):
             country_id = request_serializer.validated_data.pop("country")
-            obj = request_serializer.save()
+            search_obj = request_serializer.save()
             country_obj = CountryMaster.objects.get(id=country_id)
-            obj.country = country_obj
-            obj.save()
+            search_obj.country = country_obj
+            search_obj.save()
             resp_dict = dict()
             country = country_id
             start_date = request_serializer.validated_data.get("start_date")
@@ -292,9 +292,9 @@ class AdvancedSearchAPI(generics.CreateAPIView):
             resp_dict["country_origin"] = queryset.distinct("COUNTRY_OF_ORIGIN").count()
             resp_dict["port_of_destination"] = queryset.distinct("PORT_OF_DISCHARGE").count()
             resp_dict["hs_code_count"] = queryset.distinct("RITC").count()
-            obj.total_count = resp_dict
-            obj.save()
-            resp_dict["search_id"] = obj.id
+            search_obj.total_count = resp_dict
+            search_obj.save()
+            resp_dict["search_id"] = search_obj.id
             return Response(
                 resp_dict,
                 status=status.HTTP_201_CREATED
