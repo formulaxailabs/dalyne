@@ -95,6 +95,7 @@ class ProductMaster(admin.ModelAdmin):
     list_display = [
         field.name for field in ProductMaster._meta.fields
     ]
+    search_fields = ('hs_code',)
 
 
 @admin.register(CompanyMaster)
@@ -102,6 +103,7 @@ class CompanyMaster(admin.ModelAdmin):
     list_display = [
         field.name for field in CompanyMaster._meta.fields
     ]
+    search_fields = ('name',)
 
 
 @admin.register(MailTemplate)
