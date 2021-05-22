@@ -17,7 +17,6 @@ from django.utils.encoding import force_bytes
 from core_module.utils import generate_token
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the user object"""
     company_name = serializers.CharField(required=False)
@@ -38,16 +37,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'company_name', 'plans', 'email', 'phone_no',
             'firstname', 'password', 'user', 'lastname',
-            )
-
+        )
 
     def _exist_or_not_validator(self, exists_or_not):
         if exists_or_not:
-            raise APIException(
+            raise CustomAPIException(
                 None,
                 "email already exists",
                 status_code=status.HTTP_400_BAD_REQUEST
-                )
+            )
         else:
             return True
 
@@ -64,35 +62,35 @@ class UserSerializer(serializers.ModelSerializer):
             phone_no = validated_data.get('phone_no')
             password = validated_data.get('password')
             exists_or_not = get_user_model().objects.filter(
-                                    email=email
-                                    ).exists()
+                email=email
+            ).exists()
             self._exist_or_not_validator(exists_or_not)
             try:
-                user = get_user_model().objects.\
-                                create_user(
-                                    email=email,
-                                    name=firstname+" "+lastname,
-                                    password=password
-                                )
+                user = get_user_model().objects. \
+                    create_user(
+                    email=email,
+                    name=firstname + " " + lastname,
+                    password=password
+                )
                 user.is_active = True
                 user.save()
                 profile = Profile.objects.create(
-                        user=user,
-                        firstname=firstname,
-                        lastname=lastname,
-                        email=email,
-                        phone_no=phone_no
-                    )
+                    user=user,
+                    firstname=firstname,
+                    lastname=lastname,
+                    email=email,
+                    phone_no=phone_no
+                )
                 tenant, created = Tenant.objects.get_or_create(
-                                org_admin=user,
-                                company_name=company_name,
-                                )
+                    org_admin=user,
+                    company_name=company_name,
+                )
 
                 UserPlans.objects.create(
-                        user=user,
-                        tenant=tenant,
-                        plans_id=plans
-                    )                
+                    user=user,
+                    tenant=tenant,
+                    plans_id=plans
+                )
 
             except Exception as e:
                 raise e
@@ -127,8 +125,8 @@ class AuthTokenSerializer(serializers.Serializer):
         )
         if not user:
             msg = _('Invalid Login Credentials. Please Check Your Username & Password')
-            raise APIException(
-                    None, msg,
-                    status_code=status.HTTP_400_BAD_REQUEST)
+            raise CustomAPIException(
+                None, msg,
+                status_code=status.HTTP_400_BAD_REQUEST)
         attrs['user'] = user
         return attrs

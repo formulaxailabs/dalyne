@@ -77,7 +77,7 @@ class LoginView(KnoxLoginView):
                 email=request.data['email'],
                 is_active=True)
             if not user_is_active:
-                raise APIException(
+                raise CustomAPIException(
                     None,
                     "sorry, Account is not active !",
                     status=status.HTTP_400_BAD_REQUEST
