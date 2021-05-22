@@ -9,15 +9,8 @@ from django.core.files.storage import FileSystemStorage
 
 
 @celery_app.task(bind=True)
-def upload_excel_file_async(self, country_id, user_id, file_name, data_type, file):
+def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
     try:
-        fs = FileSystemStorage('media/import_export/')
-        file_extension = file_name.split('.')[1].lower()
-        filename = fs.save(
-            file_name.split('.')[0].lower() + '_' + str(str(uuid.uuid4())[-4:]) + '.' + file_extension, file
-        )
-        full_path = f"{fs.location}/{filename}"
-        print(f"Full Path {full_path}")
         country_obj = CountryMaster.objects.get(id=country_id)
         user_obj = User.objects.get(id=user_id)
         book = xlrd.open_workbook(full_path)

@@ -60,12 +60,18 @@ class ExcelDataImportView(generics.CreateAPIView):
             country_id = serializer.validated_data['country_id']
             file_name = serializer.validated_data['file'].name
             file = serializer.validated_data['file']
+            fs = FileSystemStorage('media/import_export/')
+            file_extension = file_name.split('.')[1].lower()
+            filename = fs.save(
+                file_name.split('.')[0].lower() + '_' + str(str(uuid.uuid4())[-4:]) + '.' + file_extension, file
+            )
+            full_path = f"{fs.location}/{filename}"
+            print(f"Full Path {full_path}")
             file_extension = file_name.split('.')[1].lower()
             if file_extension == 'xls' or file_extension == 'xlsx':
                 upload_excel_file_async.delay(
                     country_id=country_id, user_id=self.request.user.id,
-                    file_name=file_name, data_type=serializer.validated_data['type_of_sheet'],
-                    file=file
+                    full_path=full_path, data_type=serializer.validated_data['type_of_sheet']
                 )
                 return Response(
                     {'msg': 'Your file will be uploaded shortly to our db'},
@@ -240,12 +246,9 @@ class AdvancedSearchAPI(generics.CreateAPIView):
         request_serializer = self.serializer_class(data=self.request.data)
         if request_serializer.is_valid(raise_exception=True):
             country_id = request_serializer.validated_data.pop("country")
-            tenant = request_serializer.validated_data.pop("tenant")
             obj = request_serializer.save()
             country_obj = CountryMaster.objects.get(id=country_id)
-            tenant_obj = Tenant.objects.get(id=tenant)
             obj.country = country_obj
-            obj.tenant = tenant_obj
             obj.save()
             resp_dict = dict()
             country = country_id

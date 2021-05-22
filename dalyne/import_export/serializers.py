@@ -150,14 +150,10 @@ class FilterDataSerializer(serializers.ModelSerializer):
     search_value = serializers.ListField(
         required=True
     )
-    tenant = serializers.IntegerField(
-        required=True,
-        allow_null=False
-    )
 
     class Meta:
         model = FilterDataModel
-        fields = ('tenant', 'data_type', 'country', 'start_date', 'end_date', 'search_field', 'search_value')
+        fields = ('data_type', 'country', 'start_date', 'end_date', 'search_field', 'search_value')
 
 
 class AddWorkSpaceSerializer(serializers.ModelSerializer):

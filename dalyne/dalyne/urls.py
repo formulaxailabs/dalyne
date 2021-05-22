@@ -20,9 +20,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth', include('knox.urls')),
-    path('users/', include('users.urls')),
-    path('import-export/', include('import_export.urls')),
+    path('api/v1/', include('users.urls')),
+    path('api/v1/', include('import_export.urls')),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0),
          name='schema-swagger'),
 ]
