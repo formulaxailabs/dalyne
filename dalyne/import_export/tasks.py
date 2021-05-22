@@ -72,7 +72,7 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
                     company_data.append(CompanyMaster(
                         name=sheet_obj.cell_value(rowsCount, 30),
                         iec_code=iec_code,
-                        created_by=self.request.user
+                        created_by=user_obj
 
                     )
                     )
