@@ -316,6 +316,8 @@ class FilterDataGetAPI(generics.ListAPIView):
                 return ExporterDataFilterSerializer
             elif search_obj.data_type == "import":
                 return ImporterDataFilterSerializer
+        else:
+            return ImporterDataFilterSerializer
 
     def get_queryset(self):
         search_id = self.request.query_params.get('search_id')
