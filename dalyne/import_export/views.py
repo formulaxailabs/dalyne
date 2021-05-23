@@ -15,7 +15,7 @@ from import_export.serializers import ProductMasterSerializer, CompanyMasterSeri
     CompanyImportSerializer, \
     ExportImportUploadSerializer, CountryListSerializer, FilterDataSerializer, ImporterDataFilterSerializer, \
     ExporterDataFilterSerializer, WorkSpaceSerializer, AddWorkSpaceSerializer, WorkSpacePatchSerializer
-from rest_framework import status, filters, exceptions, generics, viewsets
+from rest_framework import status, filters, exceptions, generics, viewsets, views
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -444,3 +444,16 @@ class WorkSpaceAPI(viewsets.ModelViewSet):
         instance.deactivate_workspace()
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DeleteDuplicateCompaniesAPI(views.APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            for obj in CompanyMaster.objects.values_list('iec_code', flat=True).distinct():
+                CompanyMaster.objects.filter(pk__in=CompanyMaster.objects.filter(
+                    iec_code=obj).values_list('id', flat=True)[1:]).delete()
+                return Response({'msg': 'Successfully deleted'})
+        except Exception as e:
+            return Response({'error': e.args[0]})
