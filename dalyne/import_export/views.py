@@ -230,7 +230,7 @@ class CompanyListAPI(generics.ListAPIView):
 
 
 class AdvancedSearchAPI(generics.CreateAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     filter_backends = (djfilters.DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter,
@@ -312,7 +312,7 @@ class AdvancedSearchAPI(generics.CreateAPIView):
 
 
 class FilterDataGetAPI(generics.ListAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         search_id = self.request.query_params.get("search_id")
