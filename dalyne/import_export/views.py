@@ -454,6 +454,6 @@ class DeleteDuplicateCompaniesAPI(views.APIView):
             for obj in CompanyMaster.objects.values_list('iec_code', flat=True).distinct():
                 CompanyMaster.objects.filter(pk__in=CompanyMaster.objects.filter(
                     iec_code=obj).values_list('id', flat=True)[1:]).delete()
-                return Response({'msg': 'Successfully deleted'})
+            return Response({'msg': 'Successfully deleted'})
         except Exception as e:
             return Response({'error': e.args[0]})
