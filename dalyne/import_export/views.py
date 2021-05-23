@@ -200,7 +200,13 @@ class ProductListAPI(generics.ListAPIView):
     search_fields = ('description',)
 
     def get_queryset(self):
-        return ProductMaster.objects.filter(is_deleted=False)
+        hs_code = self.request.query_params.get('hs_code')
+        if hs_code:
+            queryset = ProductMaster.objects.filter(is_deleted=False,
+                                                    hs_code__istartswith=hs_code).order_by('hs_code')
+        else:
+            queryset = ProductMaster.objects.filter(is_deleted=False).order_by('hs_code')
+        return queryset
 
     def list(self, request, *args, **kwargs):
         """ custom list method """
