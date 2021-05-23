@@ -81,6 +81,7 @@ class ImportTable(admin.ModelAdmin):
     list_display = [
         field.name for field in ImportTable._meta.fields
     ]
+    search_fields = ('IMPORTER_NAME', 'EXPORTER_NAME')
 
 
 @admin.register(ExportTable)
@@ -88,6 +89,7 @@ class ExportTable(admin.ModelAdmin):
     list_display = [
         field.name for field in ExportTable._meta.fields
     ]
+    search_fields = ('IMPORTER_NAME', 'EXPORTER_NAME')
 
 
 @admin.register(ProductMaster)

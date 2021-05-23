@@ -222,7 +222,7 @@ class CompanyListAPI(generics.ListAPIView):
                        filters.SearchFilter,
                        filters.OrderingFilter,
                        )
-    search_fields = ('name',)
+    search_fields = ('name', 'iec_code')
     model = CompanyMaster
 
     def get_queryset(self):
