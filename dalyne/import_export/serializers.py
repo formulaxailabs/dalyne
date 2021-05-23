@@ -9,7 +9,7 @@ file_choice_field = [
 
 search_choice_field = [
     ("hs_code", "HS code"),
-    ("hs_4_digit_code", "HS 4 digits code"),
+    ("hs_description", "HS Description"),
     ("product", "Product"),
     ("exporter_name", "Exporter Name"),
     ("importer_name", "Exporter Name"),

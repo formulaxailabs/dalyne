@@ -230,13 +230,14 @@ class CompanyListAPI(generics.ListAPIView):
 
 
 class AdvancedSearchAPI(generics.CreateAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     filter_backends = (djfilters.DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter,
                        )
     model = FilterDataModel
     serializer_class = FilterDataSerializer
+    parser_classes = (FormParser, MultiPartParser)
 
     @swagger_auto_schema(
         request_body=FilterDataSerializer,
@@ -265,7 +266,9 @@ class AdvancedSearchAPI(generics.CreateAPIView):
                 queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
                                                 BE_DATE__date__lte=end_date)
             if search_field == "hs_code":
-                queryset = queryset.filter(TWO_DIGIT__in=search_value)
+                queryset = queryset.filter(Q(TWO_DIGIT__in=search_value) |
+                                           Q(FOUR_DIGIT__in=search_value) |
+                                           Q(RITC__in=search_value))
             if search_field == "importer_name":
                 queryset = queryset.filter(IMPORTER_NAME__in=search_value)
             if search_field == "exporter_name":
@@ -278,8 +281,11 @@ class AdvancedSearchAPI(generics.CreateAPIView):
                 queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
                                            Q(FOUR_DIGIT__in=hs_code_list) |
                                            Q(RITC__in=hs_code_list))
-            if search_field == "hs_4_digit_code":
-                queryset = queryset.filter(FOUR_DIGIT=search_value)
+            if search_field == "hs_description":
+                initial_queryset = model.objects.none()
+                for value in search_value:
+                    initial_queryset = initial_queryset | queryset.filter(RITC_DISCRIPTION__icontains=value)
+                queryset = initial_queryset
             if search_field == "iec_code":
                 if model == ExportTable:
                     queryset = queryset.filter(EXPORTER_ID__in=search_value)
@@ -306,7 +312,7 @@ class AdvancedSearchAPI(generics.CreateAPIView):
 
 
 class FilterDataGetAPI(generics.ListAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
     def get_serializer_class(self):
         search_id = self.request.query_params.get("search_id")
@@ -339,7 +345,9 @@ class FilterDataGetAPI(generics.ListAPIView):
                     queryset = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
                                                     BE_DATE__date__lte=end_date)
                 if search_field == "hs_code":
-                    queryset = queryset.filter(TWO_DIGIT__in=search_value)
+                    queryset = queryset.filter(Q(TWO_DIGIT__in=search_value) |
+                                               Q(FOUR_DIGIT__in=search_value) |
+                                               Q(RITC__in=search_value))
                 if search_field == "importer_name":
                     queryset = queryset.filter(IMPORTER_NAME__in=search_value)
                 if search_field == "exporter_name":
@@ -352,8 +360,11 @@ class FilterDataGetAPI(generics.ListAPIView):
                     queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
                                                Q(FOUR_DIGIT__in=hs_code_list) |
                                                Q(RITC__in=hs_code_list))
-                if search_field == "hs_4_digit_code":
-                    queryset = queryset.filter(FOUR_DIGIT=search_value)
+                if search_field == "hs_description":
+                    initial_queryset = model.objects.none()
+                    for value in search_value:
+                        initial_queryset = initial_queryset | queryset.filter(RITC_DISCRIPTION__icontains=value)
+                    queryset = initial_queryset
                 if search_field == "iec_code":
                     if model == ExportTable:
                         queryset = queryset.filter(EXPORTER_ID__in=search_value)

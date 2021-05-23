@@ -1,11 +1,14 @@
 import xlrd
 import os
 import uuid
-from core_module.models import ImportTable, ExportTable,CompanyMaster,User, CountryMaster
+from core_module.models import ImportTable, ExportTable,CompanyMaster,User, CountryMaster, FilterDataModel
 from dalyne import celery_app
 from django.db.models import Q
-from dalyne.settings import MEDIA_URL
 from django.core.files.storage import FileSystemStorage
+from celery.schedules import crontab
+from celery.task import periodic_task
+from datetime import timedelta
+from django.utils import timezone
 
 
 @celery_app.task(bind=True)
@@ -193,4 +196,14 @@ def upload_company_file_async(self, file_name, company_file,user_id):
     except Exception as e:
         print(e.__str__())
         return
+
+
+@periodic_task(run_every=crontab(minute=0, hour=20))
+def delete_search_queries():
+    time_now = timezone.now().replace(microsecond=0).replace(tzinfo=None)
+    past_time = time_now - timedelta(hours=24)
+    FilterDataModel.objects.filter(created_at__lte=past_time,
+                                   tenant__isnull=True).delete()
+
+
 
