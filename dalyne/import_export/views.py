@@ -243,7 +243,6 @@ class AdvancedSearchAPI(generics.CreateAPIView):
                        )
     model = FilterDataModel
     serializer_class = FilterDataSerializer
-    parser_classes = (FormParser, MultiPartParser)
 
     @swagger_auto_schema(
         request_body=FilterDataSerializer,
