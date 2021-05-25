@@ -457,3 +457,19 @@ class DeleteDuplicateCompaniesAPI(views.APIView):
             return Response({'msg': 'Successfully deleted'})
         except Exception as e:
             return Response({'error': e.args[0]})
+
+
+class DeleteExportTableAPI(views.APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            ExportTable.objects.all().delete()
+            return Response({'msg': 'Successfully deleted'})
+        except Exception as e:
+            return Response({'error': e.args[0]})
+
+
+
+
+
