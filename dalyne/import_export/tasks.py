@@ -49,7 +49,7 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
                     EXCHANGE_RATE=sheet_obj.cell_value(rowsCount, 21),
                     IMPORTER_NAME=sheet_obj.cell_value(rowsCount, 22),
                     IMPORTER_ADDRESS=sheet_obj.cell_value(rowsCount, 23),
-                    COUNTRY_OF_ORIGIN=sheet_obj.cell_value(rowsCount, 23),
+                    COUNTRY_OF_ORIGIN=sheet_obj.cell_value(rowsCount, 24),
                     PORT_OF_LOADING=sheet_obj.cell_value(rowsCount, 25),
                     PORT_OF_DISCHARGE=sheet_obj.cell_value(rowsCount, 26),
                     PORT_CODE=sheet_obj.cell_value(rowsCount, 27),
