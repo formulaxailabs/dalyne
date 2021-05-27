@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'import_export',
     'drf_yasg',
     'django_filters',
+    'advanced_search'
 
 ]
 
@@ -105,6 +106,7 @@ AUTH_USER_MODEL = 'core_module.User'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
 
 DATABASES = {
     'default': {

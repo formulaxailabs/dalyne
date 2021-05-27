@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('users.urls')),
     path('api/v1/', include('import_export.urls')),
+    path('api/v1/', include('advanced_search.urls')),
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0),
          name='schema-swagger'),
 ]
