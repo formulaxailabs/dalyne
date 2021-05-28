@@ -7,5 +7,5 @@ router = DefaultRouter()
 
 urlpatterns = [
     url(r'^', include(router.urls)),
-    url(r'^sub/filters/$', apis.SubFilterListingAPI.as_view(), name='types'),
+    url(r'^filtered/data/$', apis.SubFilterListingAPI.as_view(), name='types'),
 ]

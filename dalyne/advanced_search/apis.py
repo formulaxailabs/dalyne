@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, exceptions
 from core_module.models import ImportTable, ExportTable, Plans, \
     ProductMaster, CompanyMaster, CountryMaster, FilterDataModel
 from import_export.serializers import ImporterDataFilterSerializer, ExporterDataFilterSerializer
@@ -31,6 +31,8 @@ class SubFilterListingAPI(generics.ListAPIView):
         port_code = self.request.query_params.get('port_code', None)
         hs_code = self.request.query_params.get('hs_code', None)
         description = self.request.query_params.get('description', None)
+        min_qty = self.request.query_params.get('min_qty', None)
+        max_qty = self.request.query_params.get('max_qty', None)
         if search_id:
             search_obj = FilterDataModel.objects.filter(id=search_id).first()
             if search_obj:
@@ -103,8 +105,19 @@ class SubFilterListingAPI(generics.ListAPIView):
                     qs = qs.filter(RITC_DISCRIPTION__icontains=description)
                 if hs_code:
                     qs = qs.filter(RITC__icontains=hs_code)
+                if min_qty or max_qty:
+                    if (min_qty and not max_qty) or (max_qty and not min_qty):
+                        raise exceptions.ValidationError("Both min quantity and max quantity are required")
+                    else:
+                        qs = qs.filter(QUANTITY__gte=min_qty, QUANTITY__lte=max_qty)
                 return qs
             else:
                 return {}
         else:
             return {}
+
+    def list(self, request, *args, **kwargs):
+        """ custom list method """
+        if request.query_params.get('remove_pagination'):
+            self.pagination_class = None
+        return super(SubFilterListingAPI, self).list(request, *args, **kwargs)
