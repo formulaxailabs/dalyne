@@ -328,6 +328,7 @@ class ExportTable(models.Model):
     TWO_DIGIT = models.TextField(blank=True, null=True)
     FOUR_DIGIT = models.TextField(blank=True, null=True)
     RITC_DISCRIPTION = models.TextField(blank=True, null=True)
+    commodity_description = models.TextField(null=True, blank=True)
     UQC = models.CharField(
             max_length=60, blank=True, null=True)
     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2,
