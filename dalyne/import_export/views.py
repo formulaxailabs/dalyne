@@ -253,7 +253,9 @@ class AdvancedSearchAPI(generics.CreateAPIView):
             country_id = request_serializer.validated_data.pop("country")
             search_obj = request_serializer.save()
             country_obj = CountryMaster.objects.get(id=country_id)
+            tenant = self.request.user.tenant
             search_obj.country = country_obj
+            search_obj.tenant = tenant
             search_obj.save()
             resp_dict = dict()
             country = country_id
@@ -480,9 +482,3 @@ class CurrentDateCompanyData(views.APIView):
             return Response({'msg': 'Successfully deleted'})
         except Exception as e:
             return Response({'error': e.args[0]})
-
-
-
-
-
-
