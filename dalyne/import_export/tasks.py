@@ -71,7 +71,7 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
                     if iec_code in [None, '']:
                         iec_code = f"DALYNE{(str(uuid.uuid4())[-4:])}"
                     company_data.append(CompanyMaster(
-                        name=sheet_obj.cell_value(rowsCount, 30),
+                        name=company_name,
                         iec_code=iec_code,
                         created_by=user_obj
 

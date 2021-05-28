@@ -20,6 +20,7 @@ urlpatterns = [
     path('advanced/search/data/', views.AdvancedSearchAPI.as_view(), name='advanced-search'),
     path('filtered/data/', views.FilterDataGetAPI.as_view(), name='filter-data'),
     path('delete/duplicate/companies/', views.DeleteDuplicateCompaniesAPI.as_view(), name='duplicate-delete'),
-    path('delete/exporters/', views.DeleteExportTableAPI.as_view(), name='delete-table')
+    path('delete/exporters/', views.DeleteExportTableAPI.as_view(), name='delete-table'),
+    path('delete/data/', views.CurrentDateCompanyData.as_view(), name='delete-companies')
 
 ]

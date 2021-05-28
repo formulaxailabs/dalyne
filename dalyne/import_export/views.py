@@ -20,7 +20,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from import_export.tasks import upload_excel_file_async, upload_company_file_async
-
+from datetime import datetime
 
 class PlansListView(generics.ListAPIView):
     permission_classes = [AllowAny]
@@ -468,6 +468,19 @@ class DeleteExportTableAPI(views.APIView):
             return Response({'msg': 'Successfully deleted'})
         except Exception as e:
             return Response({'error': e.args[0]})
+
+
+class CurrentDateCompanyData(views.APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            ExportTable.objects.filter(created_at__date=datetime.today()).delete()
+            CompanyMaster.objects.filter(created_at__date=datetime.today()).delete()
+            return Response({'msg': 'Successfully deleted'})
+        except Exception as e:
+            return Response({'error': e.args[0]})
+
 
 
 
