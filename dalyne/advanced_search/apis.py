@@ -7,6 +7,8 @@ from core_module.models import ImportTable, ExportTable, Plans, \
     ProductMaster, CompanyMaster, CountryMaster, FilterDataModel
 from import_export.serializers import ImporterDataFilterSerializer, ExporterDataFilterSerializer
 
+QUERY_LIMIT = 30000
+
 
 class SubFilterListingAPI(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -242,7 +244,7 @@ class ExportAPIView(views.APIView):
             raise exceptions.ValidationError("Search id is required")
 
     def get(self, request, *args, **kwargs):
-        excel_limit = 1000
+        excel_limit = QUERY_LIMIT
         model = self.get_model_name()
         response = HttpResponse(content_type='application/ms-excel')
         response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.xls"'
