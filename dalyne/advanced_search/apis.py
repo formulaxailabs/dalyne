@@ -1,11 +1,13 @@
 import xlwt
 import uuid
+from django_filters import rest_framework as djfilters
 from django.db.models import Q
 from django.http import HttpResponse
-from rest_framework import generics, permissions, exceptions, views
+from rest_framework import generics, permissions, exceptions, views, filters
 from core_module.models import ImportTable, ExportTable, Plans, \
     ProductMaster, CompanyMaster, CountryMaster, FilterDataModel
 from import_export.serializers import ImporterDataFilterSerializer, ExporterDataFilterSerializer
+from .serializers import ExporterNameSerializer, ImporterNameSerializer
 
 QUERY_LIMIT = 30000
 
@@ -353,3 +355,46 @@ class ExportAPIView(views.APIView):
                     xlsx_sheet.write(row_index + 1, col_index, field_value)
             workbook.save(response)
             return response
+
+
+class ExporterImporterList(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    filter_backends = (djfilters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter,
+                       )
+    search_fields = None
+
+    def get_serializer_class(self):
+        data_type = self.request.query_params.get("data_type")
+        if data_type == "export":
+            return ImporterNameSerializer
+        else:
+            return ExporterNameSerializer
+
+    def get_queryset(self):
+        data_type = self.request.query_params.get("data_type")
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+        country = self.request.query_params.get("country")
+        if data_type == "export":
+            model = ExportTable
+            self.search_fields = ('IMPORTER_NAME',)
+            queryset = model.objects.filter(COUNTRY__id=country, SB_DATE__date__gte=start_date,
+                                            SB_DATE__date__lte=end_date).distinct('IMPORTER_NAME')
+        else:
+            model = ImportTable
+            self.search_fields = ('EXPORTER_NAME',)
+            queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
+                                            BE_DATE__date__lte=end_date).distinct('EXPORTER_NAME')
+        return queryset
+
+
+
+
+
+
+
+
+
+
