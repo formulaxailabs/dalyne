@@ -411,3 +411,14 @@ class CurrentDateCompanyData(views.APIView):
             return Response({'msg': 'Successfully deleted'})
         except Exception as e:
             return Response({'error': e.args[0]})
+
+
+class ProductTableData(views.APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            ProductMaster.objects.filter().delete()
+            return Response({'msg': 'Successfully deleted'})
+        except Exception as e:
+            return Response({'error': e.args[0]})
