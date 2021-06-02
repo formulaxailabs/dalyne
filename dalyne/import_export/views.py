@@ -70,7 +70,7 @@ class ExcelDataImportView(generics.CreateAPIView):
             file_extension = file_name.split('.')[1].lower()
             if file_extension == 'xls' or file_extension == 'xlsx':
                 upload_excel_file_async.run(
-                    country_id=country_id, user_id=4,
+                    country_id=country_id, user_id=self.request.user.id,
                     full_path=full_path, data_type=serializer.validated_data['type_of_sheet']
                 )
                 return Response(
