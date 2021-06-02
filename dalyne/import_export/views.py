@@ -154,7 +154,7 @@ class CompanyDataImportAPI(generics.CreateAPIView):
             company_file = serializer.validated_data['company_file']
             file_extension = file_name.split('.')[1].lower()
             if file_extension == 'xls' or file_extension == 'xlsx':
-                upload_company_file_async.delay(
+                upload_company_file_async.run(
                     file_name=file_name,
                     company_file=company_file,
                     user_id=self.request.user.id
