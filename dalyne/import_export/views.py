@@ -70,7 +70,7 @@ class ExcelDataImportView(generics.CreateAPIView):
             file_extension = file_name.split('.')[1].lower()
             if file_extension == 'xls' or file_extension == 'xlsx':
                 upload_excel_file_async.run(
-                    country_id=country_id, user_id=self.request.user.id,
+                    country_id=country_id, user_id=4,
                     full_path=full_path, data_type=serializer.validated_data['type_of_sheet']
                 )
                 return Response(
@@ -395,7 +395,7 @@ class DeleteExportTableAPI(views.APIView):
     def post(self, request, *args, **kwargs):
         try:
             ExportTable.objects.all().delete()
-            CompanyMaster.objects.all().delete()
+            # CompanyMaster.objects.all().delete()
             return Response({'msg': 'Successfully deleted'})
         except Exception as e:
             return Response({'error': e.args[0]})

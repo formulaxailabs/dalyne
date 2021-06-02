@@ -30,9 +30,9 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
                     SB_DATE=date_obj,
                     MONTH=sheet_obj.cell_value(rowsCount, 2),
                     YEAR=sheet_obj.cell_value(rowsCount, 3),
-                    RITC=str(sheet_obj.cell_value(rowsCount, 4)).replace(".", ""),
-                    TWO_DIGIT=str(sheet_obj.cell_value(rowsCount, 5)).replace(".", ""),
-                    FOUR_DIGIT=str(sheet_obj.cell_value(rowsCount, 6)).replace(".", ""),
+                    RITC=str(sheet_obj.cell_value(rowsCount, 4)).replace(".0", ""),
+                    TWO_DIGIT=str(sheet_obj.cell_value(rowsCount, 5)).replace(".0", ""),
+                    FOUR_DIGIT=str(sheet_obj.cell_value(rowsCount, 6)).replace(".0", ""),
                     RITC_DISCRIPTION=sheet_obj.cell_value(rowsCount, 7),
                     commodity_description=sheet_obj.cell_value(rowsCount, 8),
                     UQC=sheet_obj.cell_value(rowsCount, 9),
@@ -41,8 +41,8 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
                     UNT_PRICE_FC=sheet_obj.cell_value(rowsCount, 12),
                     INV_VALUE_FC=sheet_obj.cell_value(rowsCount, 13),
                     UNT_PRICE_INR=sheet_obj.cell_value(rowsCount, 14),
-                    INVOICE_NO=str(sheet_obj.cell_value(rowsCount, 15)).replace(".", ""),
-                    SB_NO=str(sheet_obj.cell_value(rowsCount, 16)).replace(".", ""),
+                    INVOICE_NO=str(sheet_obj.cell_value(rowsCount, 15)).replace(".0", ""),
+                    SB_NO=str(sheet_obj.cell_value(rowsCount, 16)).replace(".0", ""),
                     UNIT_RATE_WITH_FOB=sheet_obj.cell_value(rowsCount, 17),
                     PER_UNT_FOB=sheet_obj.cell_value(rowsCount, 18),
                     FOB_INR=sheet_obj.cell_value(rowsCount, 19),
@@ -56,17 +56,17 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
                     MODE_OF_PORT=sheet_obj.cell_value(rowsCount, 27),
                     PORT_OF_LOADING=sheet_obj.cell_value(rowsCount, 28),
                     PORT_CODE=sheet_obj.cell_value(rowsCount, 29),
-                    EXPORTER_ID=str(sheet_obj.cell_value(rowsCount, 30)).replace(".", ""),
+                    EXPORTER_ID=str(sheet_obj.cell_value(rowsCount, 30)).replace(".0", ""),
                     EXPORTER_NAME=sheet_obj.cell_value(rowsCount, 31),
                     EXPORTER_ADDRESS=sheet_obj.cell_value(rowsCount, 32),
                     EXPORTER_CITY=sheet_obj.cell_value(rowsCount, 33),
-                    EXPORTER_PIN=str(sheet_obj.cell_value(rowsCount, 34)).replace(".", ""),
+                    EXPORTER_PIN=str(sheet_obj.cell_value(rowsCount, 34)).replace(".0", ""),
                     COUNTRY=country_obj,
                     created_by=user_obj
                 )
                 )
                 company_name = sheet_obj.cell_value(rowsCount, 31)
-                iec_code = str(sheet_obj.cell_value(rowsCount, 30)).replace(".", "")
+                iec_code = str(sheet_obj.cell_value(rowsCount, 30)).replace(".0", "")
                 if not CompanyMaster.objects.filter(Q(name=company_name) | Q(iec_code=iec_code)):
                     if iec_code in [None, '']:
                         iec_code = f"DALYNE{(str(uuid.uuid4())[-4:])}"
@@ -74,9 +74,9 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
                         name=company_name,
                         iec_code=iec_code,
                         created_by=user_obj
+                    )
+                    )
 
-                    )
-                    )
             ExportTable.objects.bulk_create(export_data)
             CompanyMaster.objects.bulk_create(company_data)
             try:
@@ -88,6 +88,7 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
         elif data_type == 'import':
             import_data = list()
             for rowsCount in range(1, max_rows):
+
                 import_data.append(ImportTable(
                     BE_DATE=xlrd.xldate.xldate_as_datetime(sheet_obj.cell_value(rowsCount, 1),
                                                            book.datemode).strftime('%Y-%m-%d %H:%M:%S'),
