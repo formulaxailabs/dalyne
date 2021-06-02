@@ -395,6 +395,7 @@ class DeleteExportTableAPI(views.APIView):
     def post(self, request, *args, **kwargs):
         try:
             ExportTable.objects.all().delete()
+            CompanyMaster.objects.all().delete()
             return Response({'msg': 'Successfully deleted'})
         except Exception as e:
             return Response({'error': e.args[0]})
