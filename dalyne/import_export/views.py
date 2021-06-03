@@ -92,7 +92,7 @@ class ExcelDataImportView(generics.CreateAPIView):
 
 class ProductDataImportAPI(generics.CreateAPIView):
     serializer_class = ProductImportSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     parser_classes = (FormParser, MultiPartParser)
 
     def create(self, request, *args, **kwargs):
@@ -129,7 +129,7 @@ class ProductDataImportAPI(generics.CreateAPIView):
                             hs_code=str(sheet_obj.cell_value(rows_count, 0)),
                             description=sheet_obj.cell_value(rows_count, 1),
                             digits=digits,
-                            # created_by=self.request.user
+                            created_by=self.request.user
                         ))
                     ProductMaster.objects.bulk_create(products_list)
                     return Response({
