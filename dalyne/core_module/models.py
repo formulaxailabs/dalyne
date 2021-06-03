@@ -390,7 +390,7 @@ class ExportTable(models.Model):
 
 
 class ProductMaster(models.Model):
-    hs_code = models.IntegerField(null=True, blank=True)
+    hs_code = models.CharField(null=True, blank=True, max_length=20)
     description = models.TextField(blank=True, null=True)
     digits = models.CharField(null=True, blank=True, max_length=20)
     is_deleted = models.BooleanField(default=False)

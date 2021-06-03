@@ -22,6 +22,7 @@ from rest_framework.response import Response
 from import_export.tasks import upload_excel_file_async, upload_company_file_async
 from datetime import datetime
 
+
 class PlansListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
@@ -91,7 +92,7 @@ class ExcelDataImportView(generics.CreateAPIView):
 
 class ProductDataImportAPI(generics.CreateAPIView):
     serializer_class = ProductImportSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     parser_classes = (FormParser, MultiPartParser)
 
     def create(self, request, *args, **kwargs):
@@ -125,10 +126,10 @@ class ProductDataImportAPI(generics.CreateAPIView):
                         else:
                             digits = None
                         products_list.append(ProductMaster(
-                            hs_code=sheet_obj.cell_value(rows_count, 0),
+                            hs_code=str(sheet_obj.cell_value(rows_count, 0)),
                             description=sheet_obj.cell_value(rows_count, 1),
                             digits=digits,
-                            created_by=self.request.user
+                            # created_by=self.request.user
                         ))
                     ProductMaster.objects.bulk_create(products_list)
                     return Response({
@@ -215,16 +216,25 @@ class ProductListAPI(generics.ListAPIView):
         digits = self.request.query_params.get('digits', None)
         if hs_code and digits:
             queryset = ProductMaster.objects.filter(is_deleted=False, digits=digits,
-                                                    hs_code__istartswith=hs_code).order_by('hs_code')
+                                                    hs_code__istartswith=hs_code).extra(
+                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
+            ).order_by('hs_code_int')
+
         elif hs_code:
             queryset = ProductMaster.objects.filter(is_deleted=False,
-                                                    hs_code__istartswith=hs_code).order_by('hs_code')
+                                                    hs_code__istartswith=hs_code).extra(
+                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
+            ).order_by('hs_code_int')
         elif digits:
             queryset = ProductMaster.objects.filter(is_deleted=False,
-                                                    digits=digits).order_by('hs_code')
+                                                    digits=digits).extra(
+                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
+            ).order_by('hs_code_int')
 
         else:
-            queryset = ProductMaster.objects.filter(is_deleted=False).order_by('hs_code')
+            queryset = ProductMaster.objects.filter(is_deleted=False).extra(
+                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
+            ).order_by('hs_code_int')
         return queryset
 
     def list(self, request, *args, **kwargs):
