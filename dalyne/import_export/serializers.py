@@ -42,7 +42,7 @@ class ExportViewSerializer(serializers.ModelSerializer):
 class ProductMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductMaster
-        fields = ('hs_code', 'description')
+        fields = ('id', 'hs_code', 'description')
 
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
