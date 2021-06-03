@@ -114,9 +114,20 @@ class ProductDataImportAPI(generics.CreateAPIView):
                     max_rows = sheet_obj.nrows
                     products_list = list()
                     for rows_count in range(1, max_rows):
+                        if len(str(sheet_obj.cell_value(rows_count, 0))) == 2:
+                            digits = 2
+                        elif len(str(sheet_obj.cell_value(rows_count, 0))) == 4:
+                            digits = 4
+                        elif len(str(sheet_obj.cell_value(rows_count, 0))) == 6:
+                            digits = 6
+                        elif len(str(sheet_obj.cell_value(rows_count, 0))) == 8:
+                            digits = 8
+                        else:
+                            digits = None
                         products_list.append(ProductMaster(
                             hs_code=sheet_obj.cell_value(rows_count, 0),
                             description=sheet_obj.cell_value(rows_count, 1),
+                            digits=digits,
                             created_by=self.request.user
                         ))
                     ProductMaster.objects.bulk_create(products_list)
@@ -201,9 +212,17 @@ class ProductListAPI(generics.ListAPIView):
 
     def get_queryset(self):
         hs_code = self.request.query_params.get('hs_code')
-        if hs_code:
+        digits = self.request.query_params.get('digits', None)
+        if hs_code and digits:
+            queryset = ProductMaster.objects.filter(is_deleted=False, digits=digits,
+                                                    hs_code__istartswith=hs_code).order_by('hs_code')
+        elif hs_code:
             queryset = ProductMaster.objects.filter(is_deleted=False,
                                                     hs_code__istartswith=hs_code).order_by('hs_code')
+        elif digits:
+            queryset = ProductMaster.objects.filter(is_deleted=False,
+                                                    digits=digits).order_by('hs_code')
+
         else:
             queryset = ProductMaster.objects.filter(is_deleted=False).order_by('hs_code')
         return queryset
