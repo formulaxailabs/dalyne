@@ -14,6 +14,11 @@ QUERY_LIMIT = 30000
 
 class SubFilterListingAPI(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
+    filter_backends = (djfilters.DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter,
+                       )
+    ordering_fields = None
 
     def get_serializer_class(self):
         search_id = self.request.query_params.get("search_id")
@@ -40,6 +45,7 @@ class SubFilterListingAPI(generics.ListAPIView):
         description = self.request.query_params.get('description', None)
         min_qty = self.request.query_params.get('min_qty', None)
         max_qty = self.request.query_params.get('max_qty', None)
+
         if search_id:
             search_obj = FilterDataModel.objects.filter(id=search_id).first()
             if search_obj:
@@ -51,10 +57,17 @@ class SubFilterListingAPI(generics.ListAPIView):
                 data_type = search_obj.data_type
                 if data_type == "export":
                     model = ExportTable
+                    self.ordering_fields = ('PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'QUANTITY', 'MODE_OF_PORT',
+                                            'EXPORTER_NAME', 'IMPORTER_NAME', 'UQC', 'COUNTRY_OF_ORIGIN', 'PORT_CODE',
+                                            'SB_DATE', 'RITC')
                     qs = model.objects.filter(COUNTRY__name=country, SB_DATE__date__gte=start_date,
                                               SB_DATE__date__lte=end_date)
                 else:
                     model = ImportTable
+
+                    self.ordering_fields = ('PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'QUANTITY', 'MODE_OF_PORT',
+                                            'EXPORTER_NAME', 'IMPORTER_NAME', 'UQC', 'COUNTRY_OF_ORIGIN', 'PORT_CODE',
+                                            'BE_DATE', 'RITC')
                     qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
                                               BE_DATE__date__lte=end_date)
                 if search_field == "hs_code":
@@ -241,6 +254,7 @@ class ExportAPIView(views.APIView):
                         raise exceptions.ValidationError("Both min quantity and max quantity are required")
                     else:
                         qs = qs.filter(QUANTITY__gte=min_qty, QUANTITY__lte=max_qty)
+
                 return qs
         else:
             raise exceptions.ValidationError("Search id is required")
@@ -248,15 +262,13 @@ class ExportAPIView(views.APIView):
     def get(self, request, *args, **kwargs):
         excel_limit = QUERY_LIMIT
         model = self.get_model_name()
-        response = HttpResponse(content_type='application/ms-excel')
-        response['Content-Disposition'] = 'attachment; filename="ThePythonDjango.xls"'
         if model == ExportTable:
             response = HttpResponse(content_type='application/ms-excel')
             filename = "Exporters_" + "shipments" + "_" + str(uuid.uuid4())[-4:] + ".xls"
 
             response['Content-Disposition'] = f'attachment; filename={filename}'
 
-            header = ['S.No', 'TYPE', 'COUNTRY', 'DATE', 'MONTH', 'YEAR', 'HS CODE', 'TWO DIGIT', 'FOUR DIGIT',
+            header = ['TYPE', 'DATE', 'MONTH', 'YEAR', 'HS CODE', 'TWO DIGIT', 'FOUR DIGIT',
                       'HS CODE DESCRIPTION', 'COMMODITY DESCRIPTION', 'UNIT', 'QUANTITY', 'CURRENCY',
                       'UNT PRICE_FC', 'INV VALUE_FC', 'INV VALUE_INR', 'INVOICE NUMBER', 'SB NUMBER',
                       'UNIT RATE WITH FOB', 'PER UNT FOB', 'FOB INR', 'FOB FC', 'FOB USD', 'EXCHANGE RATE',
@@ -264,7 +276,7 @@ class ExportAPIView(views.APIView):
                       'PORT CODE', 'MODE OF PORT', 'IEC', 'EXPORTER NAME', 'EXPORTER ADDRESS', 'EXPORTER CITY',
                       'EXPORTER PIN']
 
-            fields = ['COUNTRY', 'SB_DATE', 'MONTH', 'YEAR', 'RITC', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION',
+            fields = ['SB_DATE', 'MONTH', 'YEAR', 'RITC', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION',
                       'commodity_description', 'UQC', 'QUANTITY', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC',
                       'UNT_PRICE_INR', 'INVOICE_NO', 'SB_NO', 'UNIT_RATE_WITH_FOB', 'PER_UNT_FOB', 'FOB_INR',
                       'FOB_FC', 'FOB_USD', 'EXCHANGE_RATE', 'IMPORTER_NAME', 'IMPORTER_ADDRESS', 'COUNTRY_OF_ORIGIN',
@@ -279,14 +291,11 @@ class ExportAPIView(views.APIView):
 
             for index, user_obj in enumerate(qs):
                 temp_data_row = list()
-                temp_data_row.append(str(index + 1))
-                temp_data_row.append('EXPORTER')
+                temp_data_row.append('EXPORT')
                 for index, field in enumerate(fields):
                     if field == 'SB_DATE' and user_obj.SB_DATE:
                         date = user_obj.SB_DATE.strftime("%d-%m-%Y")
                         temp_data_row.append(date)
-                    elif field == 'COUNTRY' and user_obj.COUNTRY:
-                        temp_data_row.append(user_obj.COUNTRY.name)
                     elif hasattr(user_obj, field):
                         if getattr(user_obj, field) is not None:
                             temp_data_row.append(str(getattr(user_obj, field)))
@@ -306,7 +315,7 @@ class ExportAPIView(views.APIView):
             filename = "Importers_" + "shipments" + "_" + str(uuid.uuid4())[-4:] + ".xls"
 
             response['Content-Disposition'] = f'attachment; filename={filename}'
-            header = ['S.No', 'TYPE', 'COUNTRY', 'DATE', 'MONTH', 'YEAR', 'HS CODE', 'TWO DIGIT', 'FOUR DIGIT',
+            header = ['TYPE', 'DATE', 'MONTH', 'YEAR', 'HS CODE', 'TWO DIGIT', 'FOUR DIGIT',
                       'HS CODE DESCRIPTION', 'UNIT', 'QUANTITY', 'CURRENCY', 'UNT PRICE_FC', 'INV VALUE_FC',
                       'UNT PRICE INR', 'INVOICE NUMBER', 'BE NUMBER', 'UNIT RATE WITH DUTY', 'PER UNT DUTY', 'DUTY INR',
                       'DUTY FC', 'DUTY PERCENT', 'EX TOTAL VALUE', 'ASS VALUE INR', 'ASS VALUE USD', 'ASS VALUE FC',
@@ -316,7 +325,7 @@ class ExportAPIView(views.APIView):
                       'IMPORTER_PIN', 'IMPORTER PHONE', 'IMPORTER EMAIL', 'IMPORTER CONTACT PERSON', 'BE TYPE',
                       'CHA NAME', 'Item No']
 
-            fields = ['COUNTRY', 'BE_DATE', 'MONTH', 'YEAR', 'RITC', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION',
+            fields = ['BE_DATE', 'MONTH', 'YEAR', 'RITC', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION',
                       'UQC', 'QUANTITY', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC',
                       'UNT_PRICE_INR', 'INV_NO', 'BE_NO', 'UNT_RATE_WITH_DUTY', 'PER_UNT_DUTY', 'DUTY_INR', 'DUTY_FC',
                       'DUTY_PERCENT', 'EX_TOTAL_VALUE', 'ASS_VALUE_INR', 'ASS_VALUE_USD', 'ASS_VALUE_FC',
@@ -333,14 +342,11 @@ class ExportAPIView(views.APIView):
 
             for index, user_obj in enumerate(qs):
                 temp_data_row = list()
-                temp_data_row.append(str(index + 1))
-                temp_data_row.append('IMPORTER')
+                temp_data_row.append('IMPORT')
                 for index, field in enumerate(fields):
                     if field == 'BE_DATE' and user_obj.BE_DATE:
                         date = user_obj.BE_DATE.strftime("%d-%m-%Y")
                         temp_data_row.append(date)
-                    elif field == 'COUNTRY' and user_obj.COUNTRY:
-                        temp_data_row.append(user_obj.COUNTRY.name)
                     elif hasattr(user_obj, field):
                         if getattr(user_obj, field) is not None:
                             temp_data_row.append(str(getattr(user_obj, field)))
@@ -388,13 +394,3 @@ class ExporterImporterList(generics.ListAPIView):
             queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
                                             BE_DATE__date__lte=end_date).distinct('EXPORTER_NAME')
         return queryset
-
-
-
-
-
-
-
-
-
-
