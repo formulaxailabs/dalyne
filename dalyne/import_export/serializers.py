@@ -116,11 +116,13 @@ class ImporterDataFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ImportTable
-        fields = ('BE_DATE', 'RITC', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'IMPORTER_NAME',
+        fields = ('BE_DATE', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'IMPORTER_NAME',
                   'EXPORTER_NAME', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC', 'UNT_PRICE_INR', 'INV_NO',
                   'UNT_RATE_WITH_DUTY', 'PER_UNT_DUTY', 'DUTY_INR', 'DUTY_FC', 'DUTY_PERCENT', 'EX_TOTAL_VALUE',
-                  'ASS_VALUE_INR', 'ASS_VALUE_USD', 'ASS_VALUE_FC', 'EXCHANGE_RATE',
-                  'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT', 'PORT_CODE', 'iec',
+                  'ASS_VALUE_INR', 'ASS_VALUE_USD', 'ASS_VALUE_FC', 'EXCHANGE_RATE', 'EXPORTER_ADDRESS',
+                  'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT',
+                  'PORT_CODE', 'iec', 'IMPORTER_ADDRESS', 'IMPORTER_CITY_STATE', 'IMPORTER_PIN',
+                  'IMPORTER_PHONE',  'IMPORTER_EMAIL', 'IMPORTER_CONTACT_PERSON', 'BE_TYPE', 'CHA_NAME', 'Item_No',
                   'MONTH', 'YEAR')
 
 
@@ -132,9 +134,10 @@ class ExporterDataFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExportTable
-        fields = ('SB_DATE', 'RITC', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'IMPORTER_NAME',
+        fields = ('SB_DATE', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'IMPORTER_NAME',
                   'EXPORTER_NAME', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC', 'UNT_PRICE_INR', 'INVOICE_NO',
                   'UNIT_RATE_WITH_FOB', 'PER_UNT_FOB', 'FOB_INR', 'FOB_FC', 'FOB_USD', 'EXCHANGE_RATE',
+                  'EXPORTER_ADDRESS', 'EXPORTER_CITY', 'EXPORTER_PIN', 'IMPORTER_ADDRESS',
                   'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT', 'PORT_CODE', 'iec',
                   'MONTH', 'YEAR')
 
