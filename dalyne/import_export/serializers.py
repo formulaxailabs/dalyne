@@ -122,8 +122,8 @@ class ImporterDataFilterSerializer(serializers.ModelSerializer):
                   'ASS_VALUE_INR', 'ASS_VALUE_USD', 'ASS_VALUE_FC', 'EXCHANGE_RATE', 'EXPORTER_ADDRESS',
                   'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT',
                   'PORT_CODE', 'iec', 'IMPORTER_ADDRESS', 'IMPORTER_CITY_STATE', 'IMPORTER_PIN',
-                  'IMPORTER_PHONE',  'IMPORTER_EMAIL', 'IMPORTER_CONTACT_PERSON', 'BE_TYPE', 'CHA_NAME', 'Item_No',
-                  'MONTH', 'YEAR')
+                  'IMPORTER_PHONE',  'IMPORTER_EMAIL', 'IMPORTER_CONTACT_PERSON', 'BE_TYPE', 'BE_NO', 'CHA_NAME',
+                  'Item_No', 'MONTH', 'YEAR')
 
 
 class ExporterDataFilterSerializer(serializers.ModelSerializer):
@@ -135,8 +135,8 @@ class ExporterDataFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExportTable
         fields = ('SB_DATE', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC', 'RITC_DISCRIPTION', 'UQC', 'QUANTITY', 'IMPORTER_NAME',
-                  'EXPORTER_NAME', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC', 'UNT_PRICE_INR', 'INVOICE_NO',
-                  'UNIT_RATE_WITH_FOB', 'PER_UNT_FOB', 'FOB_INR', 'FOB_FC', 'FOB_USD', 'EXCHANGE_RATE',
+                  'EXPORTER_NAME', 'CURRENCY', 'SB',  'UNT_PRICE_FC', 'INV_VALUE_FC', 'UNT_PRICE_INR', 'INVOICE_NO',
+                  'SB_NO', 'UNIT_RATE_WITH_FOB', 'PER_UNT_FOB', 'FOB_INR', 'FOB_FC', 'FOB_USD', 'EXCHANGE_RATE',
                   'EXPORTER_ADDRESS', 'EXPORTER_CITY', 'EXPORTER_PIN', 'IMPORTER_ADDRESS',
                   'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT', 'PORT_CODE', 'iec',
                   'MONTH', 'YEAR')
