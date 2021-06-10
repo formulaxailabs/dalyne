@@ -88,65 +88,73 @@ def upload_excel_file_async(self, country_id, user_id, full_path, data_type):
         elif data_type == 'import':
             import_data = list()
             for rowsCount in range(1, max_rows):
+                try:
+                    date_obj = datetime.strptime(sheet_obj.cell_value(rowsCount, 1), '%d-%m-%Y')
+                except:
+                    date_obj = xlrd.xldate.xldate_as_datetime(sheet_obj.cell_value(rowsCount, 1),
+                                                              book.datemode).strftime('%Y-%m-%d %H:%M:%S')
 
                 import_data.append(ImportTable(
-                    BE_DATE=xlrd.xldate.xldate_as_datetime(sheet_obj.cell_value(rowsCount, 1),
-                                                           book.datemode).strftime('%Y-%m-%d %H:%M:%S'),
+                    BE_DATE=date_obj,
                     MONTH=sheet_obj.cell_value(rowsCount, 2),
                     YEAR=sheet_obj.cell_value(rowsCount, 3),
                     RITC=sheet_obj.cell_value(rowsCount, 4),
                     TWO_DIGIT=sheet_obj.cell_value(rowsCount, 5),
                     FOUR_DIGIT=sheet_obj.cell_value(rowsCount, 6),
                     RITC_DISCRIPTION=sheet_obj.cell_value(rowsCount, 7),
-                    UQC=sheet_obj.cell_value(rowsCount, 8),
-                    QUANTITY=sheet_obj.cell_value(rowsCount, 9),
-                    CURRENCY=sheet_obj.cell_value(rowsCount, 10),
-                    UNT_PRICE_FC=sheet_obj.cell_value(rowsCount, 11),
-                    INV_VALUE_FC=sheet_obj.cell_value(rowsCount, 12),
-                    UNT_PRICE_INR=sheet_obj.cell_value(rowsCount, 13),
-                    INV_NO=sheet_obj.cell_value(rowsCount, 14),
-                    BE_NO=sheet_obj.cell_value(rowsCount, 15),
-                    UNT_RATE_WITH_DUTY=sheet_obj.cell_value(rowsCount, 16),
-                    PER_UNT_DUTY=sheet_obj.cell_value(rowsCount, 17),
-                    DUTY_INR=sheet_obj.cell_value(rowsCount, 18),
-                    DUTY_FC=sheet_obj.cell_value(rowsCount, 19),
-                    DUTY_PERCENT=sheet_obj.cell_value(rowsCount, 20),
-                    EX_TOTAL_VALUE=sheet_obj.cell_value(rowsCount, 21),
-                    ASS_VALUE_INR=sheet_obj.cell_value(rowsCount, 22),
-                    ASS_VALUE_USD=sheet_obj.cell_value(rowsCount, 23),
-                    ASS_VALUE_FC=sheet_obj.cell_value(rowsCount, 24),
-                    EXCHANGE_RATE=sheet_obj.cell_value(rowsCount, 25),
-                    EXPORTER_NAME=sheet_obj.cell_value(rowsCount, 26),
-                    EXPORTER_ADDRESS=sheet_obj.cell_value(rowsCount, 27),
-                    COUNTRY_OF_ORIGIN=sheet_obj.cell_value(rowsCount, 28),
-                    PORT_OF_LOADING=sheet_obj.cell_value(rowsCount, 29),
-                    PORT_OF_DISCHARGE=sheet_obj.cell_value(rowsCount, 30),
-                    PORT_CODE=sheet_obj.cell_value(rowsCount, 31),
-                    MODE_OF_PORT=sheet_obj.cell_value(rowsCount, 32),
-                    IMPORTER_ID=sheet_obj.cell_value(rowsCount, 33),
-                    IMPORTER_NAME=sheet_obj.cell_value(rowsCount, 34),
-                    IMPORTER_ADDRESS=sheet_obj.cell_value(rowsCount, 35),
-                    IMPORTER_CITY_STATE=sheet_obj.cell_value(rowsCount, 36),
-                    IMPORTER_PIN=sheet_obj.cell_value(rowsCount, 37),
-                    IMPORTER_PHONE=sheet_obj.cell_value(rowsCount, 38),
-                    IMPORTER_EMAIL=sheet_obj.cell_value(rowsCount, 39),
-                    IMPORTER_CONTACT_PERSON=sheet_obj.cell_value(rowsCount, 40),
-                    BE_TYPE=sheet_obj.cell_value(rowsCount, 41),
-                    CHA_NAME=sheet_obj.cell_value(rowsCount, 42),
-                    Item_No=sheet_obj.cell_value(rowsCount, 43),
+                    commodity_description=sheet_obj.cell_value(rowsCount, 8),
+                    UQC=sheet_obj.cell_value(rowsCount, 9),
+                    QUANTITY=sheet_obj.cell_value(rowsCount, 10),
+                    CURRENCY=sheet_obj.cell_value(rowsCount, 11),
+                    UNT_PRICE_FC=sheet_obj.cell_value(rowsCount, 12),
+                    INV_VALUE_FC=sheet_obj.cell_value(rowsCount, 13),
+                    UNT_PRICE_INR=sheet_obj.cell_value(rowsCount, 14),
+                    INV_NO=sheet_obj.cell_value(rowsCount, 15),
+                    BE_NO=sheet_obj.cell_value(rowsCount, 16),
+                    UNT_RATE_WITH_DUTY=sheet_obj.cell_value(rowsCount, 17),
+                    PER_UNT_DUTY=sheet_obj.cell_value(rowsCount, 18),
+                    DUTY_INR=sheet_obj.cell_value(rowsCount, 19),
+                    DUTY_USD= sheet_obj.cell_value(rowsCount, 20),
+                    DUTY_FC=sheet_obj.cell_value(rowsCount, 21),
+                    DUTY_PERCENT=sheet_obj.cell_value(rowsCount, 22),
+                    EX_TOTAL_VALUE=sheet_obj.cell_value(rowsCount, 23),
+                    ASS_VALUE_INR=sheet_obj.cell_value(rowsCount, 24),
+                    ASS_VALUE_USD=sheet_obj.cell_value(rowsCount, 25),
+                    ASS_VALUE_FC=sheet_obj.cell_value(rowsCount, 26),
+                    importer_value_inr=sheet_obj.cell_value(rowsCount, 27),
+                    importer_value_usd=sheet_obj.cell_value(rowsCount, 28),
+                    importer_value_fc=sheet_obj.cell_value(rowsCount, 29),
+                    EXCHANGE_RATE=sheet_obj.cell_value(rowsCount, 30),
+                    EXPORTER_NAME=sheet_obj.cell_value(rowsCount, 31),
+                    EXPORTER_ADDRESS=sheet_obj.cell_value(rowsCount, 32),
+                    COUNTRY_OF_ORIGIN=sheet_obj.cell_value(rowsCount, 33),
+                    PORT_OF_LOADING=sheet_obj.cell_value(rowsCount, 34),
+                    PORT_CODE=sheet_obj.cell_value(rowsCount, 35),
+                    PORT_OF_DISCHARGE=sheet_obj.cell_value(rowsCount, 36),
+                    MODE_OF_PORT=sheet_obj.cell_value(rowsCount, 37),
+                    IMPORTER_ID=sheet_obj.cell_value(rowsCount, 38),
+                    IMPORTER_NAME=sheet_obj.cell_value(rowsCount, 39),
+                    IMPORTER_ADDRESS=sheet_obj.cell_value(rowsCount, 40),
+                    IMPORTER_CITY_STATE=sheet_obj.cell_value(rowsCount, 41),
+                    IMPORTER_PIN=sheet_obj.cell_value(rowsCount, 42),
+                    IMPORTER_PHONE=sheet_obj.cell_value(rowsCount, 43),
+                    IMPORTER_EMAIL=sheet_obj.cell_value(rowsCount, 44),
+                    IMPORTER_CONTACT_PERSON=sheet_obj.cell_value(rowsCount, 45),
+                    BE_TYPE=sheet_obj.cell_value(rowsCount, 46),
+                    CHA_NAME=sheet_obj.cell_value(rowsCount, 47),
+                    Item_No=sheet_obj.cell_value(rowsCount, 48),
                     COUNTRY=country_obj,
                     created_by=user_obj
                 )
                 )
-                company_name = sheet_obj.cell_value(rowsCount, 34)
-                iec_code = sheet_obj.cell_value(rowsCount, 33)
+                company_name = sheet_obj.cell_value(rowsCount, 39)
+                iec_code = sheet_obj.cell_value(rowsCount, 38)
 
                 if not CompanyMaster.objects.filter(Q(name=company_name) | Q(iec_code=iec_code)):
-                    iec_code = sheet_obj.cell_value(rowsCount, 33)
                     if iec_code in [None, '']:
                         iec_code = f"DALYNE{(str(uuid.uuid4())[-4:])}"
                     company_data.append(CompanyMaster(
-                        name=sheet_obj.cell_value(rowsCount, 34),
+                        name=company_name,
                         iec_code=iec_code,
                         created_by=user_obj
 

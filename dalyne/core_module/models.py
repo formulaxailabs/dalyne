@@ -250,6 +250,7 @@ class ImportTable(models.Model):
     TWO_DIGIT = models.TextField(blank=True, null=True)
     FOUR_DIGIT = models.TextField(blank=True, null=True)
     RITC_DISCRIPTION = models.TextField(blank=True, null=True)
+    commodity_description = models.TextField(null=True, blank=True)
     UQC = models.CharField(
             max_length=60, blank=True, null=True)
     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2,
@@ -269,6 +270,8 @@ class ImportTable(models.Model):
             blank=True, null=True)
     DUTY_INR = models.DecimalField(max_digits=20, decimal_places=7,
             blank=True, null=True)
+    DUTY_USD = models.DecimalField(max_digits=20, decimal_places=7,
+                                   blank=True, null=True)
     DUTY_FC = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
     DUTY_PERCENT = models.DecimalField(max_digits=15, decimal_places=10,
@@ -281,7 +284,13 @@ class ImportTable(models.Model):
             blank=True, null=True)
     ASS_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
-    EXCHANGE_RATE = models.IntegerField(blank=True, null=True)
+    importer_value_inr = models.DecimalField(max_digits=25, decimal_places=10,
+            blank=True, null=True)
+    importer_value_usd = models.DecimalField(max_digits=25, decimal_places=10,
+                                             blank=True, null=True)
+    importer_value_fc = models.DecimalField(max_digits=25, decimal_places=10,
+                                             blank=True, null=True)
+    EXCHANGE_RATE = models.FloatField(null=True, blank=True)
     EXPORTER_NAME = models.TextField(blank=True, null=True)
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     COUNTRY_OF_ORIGIN = models.TextField(blank=True, null=True)
@@ -299,7 +308,7 @@ class ImportTable(models.Model):
     IMPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     BE_TYPE = models.CharField(max_length=120, blank=True, null=True)
     CHA_NAME = models.TextField(blank=True, null=True)
-    Item_No = models.IntegerField(blank=True, null=True)
+    Item_No = models.TextField(null=True, blank=True)
     COUNTRY = models.ForeignKey(CountryMaster, related_name='ImportTable_COUNTRY',
                  on_delete=models.CASCADE, blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
