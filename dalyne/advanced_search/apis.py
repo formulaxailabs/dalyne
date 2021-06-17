@@ -60,21 +60,21 @@ class SubFilterListingAPI(generics.ListAPIView):
                     model = ExportTable
                     self.ordering_fields = ('PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'QUANTITY', 'MODE_OF_PORT',
                                             'EXPORTER_NAME', 'IMPORTER_NAME', 'UQC', 'COUNTRY_OF_ORIGIN', 'PORT_CODE',
-                                            'SB_DATE', 'RITC')
-                    qs = model.objects.filter(COUNTRY__name=country, SB_DATE__date__gte=start_date,
-                                              SB_DATE__date__lte=end_date)
+                                            'BE_DATE', 'HS_CODE')
+                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
+                                              BE_DATE__date__lte=end_date)
                 else:
                     model = ImportTable
 
                     self.ordering_fields = ('PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'QUANTITY', 'MODE_OF_PORT',
                                             'EXPORTER_NAME', 'IMPORTER_NAME', 'UQC', 'COUNTRY_OF_ORIGIN', 'PORT_CODE',
-                                            'BE_DATE', 'RITC')
+                                            'BE_DATE', 'HS_CODE')
                     qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
                                               BE_DATE__date__lte=end_date)
                 if search_field == "hs_code":
                     qs = qs.filter(Q(TWO_DIGIT__in=search_value) |
                                    Q(FOUR_DIGIT__in=search_value) |
-                                   Q(RITC__in=search_value))
+                                   Q(HS_CODE__in=search_value))
                 if search_field == "importer_name":
                     qs = qs.filter(IMPORTER_NAME__in=search_value)
                 if search_field == "exporter_name":
@@ -86,20 +86,20 @@ class SubFilterListingAPI(generics.ListAPIView):
                         hs_code_list.append(obj.hs_code)
                     qs = qs.filter(Q(TWO_DIGIT__in=hs_code_list) |
                                    Q(FOUR_DIGIT__in=hs_code_list) |
-                                   Q(RITC__in=hs_code_list))
+                                   Q(HS_CODE__in=hs_code_list))
                 if search_field == "hs_description":
                     initial_queryset = model.objects.none()
                     for value in search_value:
-                        initial_queryset = initial_queryset | qs.filter(RITC_DISCRIPTION__icontains=value)
+                        initial_queryset = initial_queryset | qs.filter(HS_CODE_DESCRIPTION__icontains=value)
                     qs = initial_queryset
                 if search_field == "iec_code":
                     if model == ExportTable:
-                        qs = qs.filter(EXPORTER_ID__in=search_value)
+                        qs = qs.filter(IEC__in=search_value)
                     if model == ImportTable:
                         qs = qs.filter(IMPORTER_ID__in=search_value)
                 if exporter:
                     if model == ExportTable:
-                        qs = qs.filter(Q(EXPORTER_ID__icontains=exporter) |
+                        qs = qs.filter(Q(IEC__icontains=exporter) |
                                        Q(EXPORTER_NAME__icontains=exporter))
                     if model == ImportTable:
                         qs = qs.filter(EXPORTER_NAME__icontains=exporter)
@@ -123,9 +123,9 @@ class SubFilterListingAPI(generics.ListAPIView):
                 if port_code:
                     qs = qs.filter(PORT_CODE__icontains=port_code)
                 if description:
-                    qs = qs.filter(RITC_DISCRIPTION__icontains=description)
+                    qs = qs.filter(HS_CODE_DESCRIPTION__icontains=description)
                 if hs_code:
-                    qs = qs.filter(RITC__icontains=hs_code)
+                    qs = qs.filter(HS_CODE__icontains=hs_code)
                 if min_qty or max_qty:
                     if (min_qty and not max_qty) or (max_qty and not min_qty):
                         raise exceptions.ValidationError("Both min quantity and max quantity are required")
@@ -184,8 +184,8 @@ class ExportAPIView(views.APIView):
                 data_type = search_obj.data_type
                 if data_type == "export":
                     model = ExportTable
-                    qs = model.objects.filter(COUNTRY__name=country, SB_DATE__date__gte=start_date,
-                                              SB_DATE__date__lte=end_date)
+                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
+                                              BE_DATE__date__lte=end_date)
                 else:
                     model = ImportTable
                     qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
@@ -193,7 +193,7 @@ class ExportAPIView(views.APIView):
                 if search_field == "hs_code":
                     qs = qs.filter(Q(TWO_DIGIT__in=search_value) |
                                    Q(FOUR_DIGIT__in=search_value) |
-                                   Q(RITC__in=search_value))
+                                   Q(HS_CODE__in=search_value))
                 if search_field == "importer_name":
                     qs = qs.filter(IMPORTER_NAME__in=search_value)
                 if search_field == "exporter_name":
@@ -205,20 +205,20 @@ class ExportAPIView(views.APIView):
                         hs_code_list.append(obj.hs_code)
                     qs = qs.filter(Q(TWO_DIGIT__in=hs_code_list) |
                                    Q(FOUR_DIGIT__in=hs_code_list) |
-                                   Q(RITC__in=hs_code_list))
+                                   Q(HS_CODE__in=hs_code_list))
                 if search_field == "hs_description":
                     initial_queryset = model.objects.none()
                     for value in search_value:
-                        initial_queryset = initial_queryset | qs.filter(RITC_DISCRIPTION__icontains=value)
+                        initial_queryset = initial_queryset | qs.filter(HS_CODE_DESCRIPTION__icontains=value)
                     qs = initial_queryset
                 if search_field == "iec_code":
                     if model == ExportTable:
-                        qs = qs.filter(EXPORTER_ID__in=search_value)
+                        qs = qs.filter(IEC__in=search_value)
                     if model == ImportTable:
                         qs = qs.filter(IMPORTER_ID__in=search_value)
                 if exporter:
                     if model == ExportTable:
-                        qs = qs.filter(Q(EXPORTER_ID__icontains=exporter) |
+                        qs = qs.filter(Q(IEC__icontains=exporter) |
                                        Q(EXPORTER_NAME__icontains=exporter))
                     if model == ImportTable:
                         qs = qs.filter(EXPORTER_NAME__icontains=exporter)
@@ -242,9 +242,9 @@ class ExportAPIView(views.APIView):
                 if port_code:
                     qs = qs.filter(PORT_CODE__icontains=port_code)
                 if description:
-                    qs = qs.filter(RITC_DISCRIPTION__icontains=description)
+                    qs = qs.filter(HS_CODE_DESCRIPTION__icontains=description)
                 if hs_code:
-                    qs = qs.filter(RITC__icontains=hs_code)
+                    qs = qs.filter(HS_CODE__icontains=hs_code)
                 if min_qty or max_qty:
                     if (min_qty and not max_qty) or (max_qty and not min_qty):
                         raise exceptions.ValidationError("Both min quantity and max quantity are required")
@@ -272,26 +272,26 @@ class ExportAPIView(views.APIView):
                               'PORT CODE', 'MODE OF PORT', 'IEC', 'EXPORTER NAME', 'EXPORTER ADDRESS', 'EXPORTER CITY',
                               'EXPORTER PIN']
 
-                    fields = ['SB_DATE', 'MONTH', 'YEAR', 'RITC', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION',
-                              'commodity_description', 'UQC', 'QUANTITY', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC',
-                              'UNT_PRICE_INR', 'INVOICE_NO', 'SB_NO', 'UNIT_RATE_WITH_FOB', 'PER_UNT_FOB', 'FOB_INR',
+                    fields = ['BE_DATE', 'MONTH', 'YEAR', 'HS_CODE', 'TWO_DIGIT', 'FOUR_DIGIT', 'HS_CODE_DESCRIPTION',
+                              'COMMODITY_DESCRIPTION', 'UQC', 'QUANTITY', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC',
+                              'UNT_PRICE_INR', 'INVOICE_NO', 'SB_NO', 'UNIT_RATE_WITH_FOB_INR', 'PER_UNT_FOB', 'FOB_INR',
                               'FOB_FC', 'FOB_USD', 'EXCHANGE_RATE', 'IMPORTER_NAME', 'IMPORTER_ADDRESS',
                               'COUNTRY_OF_ORIGIN',
-                              'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'PORT_CODE', 'MODE_OF_PORT', 'EXPORTER_ID',
+                              'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'PORT_CODE', 'MODE_OF_PORT', 'IEC',
                               'EXPORTER_NAME', 'EXPORTER_ADDRESS', 'EXPORTER_CITY', 'EXPORTER_PIN']
 
                     workbook = xlwt.Workbook()
                     xlsx_sheet = workbook.add_sheet('shipments_data')
                     xlsx_sheet = self.write_header(xlsx_sheet, header)
                     data = list()
-                    qs = queryset.order_by('SB_DATE')[:excel_limit]
+                    qs = queryset.order_by('BE_DATE')[:excel_limit]
 
                     for index, user_obj in enumerate(qs):
                         temp_data_row = list()
                         temp_data_row.append('EXPORT')
                         for index, field in enumerate(fields):
-                            if field == 'SB_DATE' and user_obj.SB_DATE:
-                                date = user_obj.SB_DATE.strftime("%d-%m-%Y")
+                            if field == 'BE_DATE' and user_obj.BE_DATE:
+                                date = user_obj.BE_DATE.strftime("%d-%m-%Y")
                                 temp_data_row.append(date)
                             elif hasattr(user_obj, field):
                                 if getattr(user_obj, field) is not None:
@@ -324,16 +324,16 @@ class ExportAPIView(views.APIView):
                               'IMPORTER_PIN', 'IMPORTER PHONE', 'IMPORTER EMAIL', 'IMPORTER CONTACT PERSON', 'BE TYPE',
                               'CHA NAME', 'Item No']
 
-                    fields = ['BE_DATE', 'MONTH', 'YEAR', 'RITC', 'TWO_DIGIT', 'FOUR_DIGIT', 'RITC_DISCRIPTION',
+                    fields = ['BE_DATE', 'MONTH', 'YEAR', 'HS_CODE', 'TWO_DIGIT', 'FOUR_DIGIT', 'HS_CODE_DESCRIPTION',
                               'UQC', 'QUANTITY', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC',
-                              'UNT_PRICE_INR', 'INV_NO', 'BE_NO', 'UNT_RATE_WITH_DUTY', 'PER_UNT_DUTY', 'DUTY_INR',
+                              'UNT_PRICE_INR', 'INVOICE_NO', 'BE_NO', 'UNT_RATE_WITH_DUTY_INR', 'PER_UNT_DUTY_INR', 'DUTY_INR',
                               'DUTY_FC',
-                              'DUTY_PERCENT', 'EX_TOTAL_VALUE', 'ASS_VALUE_INR', 'ASS_VALUE_USD', 'ASS_VALUE_FC',
+                              'DUTY_PERCT', 'EX_TOTAL_VALUE_INR', 'ASS_VALUE_INR', 'ASS_VALUE_USD', 'ASS_VALUE_FC',
                               'EXCHANGE_RATE', 'EXPORTER_NAME', 'EXPORTER_ADDRESS', 'COUNTRY_OF_ORIGIN',
                               'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'PORT_CODE', 'MODE_OF_PORT', 'IMPORTER_ID',
-                              'IMPORTER_NAME', 'IMPORTER_ADDRESS', 'IMPORTER_CITY_STATE', 'IMPORTER_PIN',
+                              'IMPORTER_NAME', 'IMPORTER_ADDRESS', 'IMPORTER_CITY_OR_STATE', 'IMPORTER_PIN',
                               'IMPORTER_PHONE',
-                              'IMPORTER_EMAIL', 'IMPORTER_CONTACT_PERSON', 'BE_TYPE', 'CHA_NAME', 'Item_No']
+                              'IMPORTER_EMAIL', 'IMPORTER_CONTACT_PERSON', 'BE_TYPE', 'CHA_NAME']
 
                     workbook = xlwt.Workbook()
                     xlsx_sheet = workbook.add_sheet('shipments_data')
@@ -393,8 +393,8 @@ class ExporterImporterList(generics.ListAPIView):
         if data_type == "export":
             model = ExportTable
             self.search_fields = ('IMPORTER_NAME',)
-            queryset = model.objects.filter(COUNTRY__id=country, SB_DATE__date__gte=start_date,
-                                            SB_DATE__date__lte=end_date).distinct('IMPORTER_NAME')
+            queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
+                                            BE_DATE__date__lte=end_date).distinct('IMPORTER_NAME')
         else:
             model = ImportTable
             self.search_fields = ('EXPORTER_NAME',)

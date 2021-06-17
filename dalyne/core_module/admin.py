@@ -84,6 +84,19 @@ class ImportTable(admin.ModelAdmin):
     search_fields = ('IMPORTER_NAME', 'EXPORTER_NAME')
 
 
+# @admin.register(ImportRawTable)
+# class ImportRawTable(admin.ModelAdmin):
+#     list_display = [
+#         field.name for field in ImportRawTable._meta.fields
+#     ]
+    
+
+# @admin.register(ExportRawTable)
+# class ExportRawTable(admin.ModelAdmin):
+#     list_display = [
+#         field.name for field in ExportRawTable._meta.fields
+#     ]
+
 @admin.register(ExportTable)
 class ExportTable(admin.ModelAdmin):
     list_display = [

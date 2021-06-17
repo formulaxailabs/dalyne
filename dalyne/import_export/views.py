@@ -295,8 +295,8 @@ class AdvancedSearchAPI(generics.CreateAPIView):
 
             if request_serializer.validated_data.get("data_type") == "export":
                 model = ExportTable
-                queryset = model.objects.filter(COUNTRY__id=country, SB_DATE__date__gte=start_date,
-                                                SB_DATE__date__lte=end_date)
+                queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
+                                                BE_DATE__date__lte=end_date)
             else:
                 model = ImportTable
                 queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
@@ -304,7 +304,7 @@ class AdvancedSearchAPI(generics.CreateAPIView):
             if search_field == "hs_code":
                 queryset = queryset.filter(Q(TWO_DIGIT__in=search_value) |
                                            Q(FOUR_DIGIT__in=search_value) |
-                                           Q(RITC__in=search_value))
+                                           Q(HS_CODE__in=search_value))
             if search_field == "importer_name":
                 queryset = queryset.filter(IMPORTER_NAME__in=search_value)
             if search_field == "exporter_name":
@@ -316,15 +316,15 @@ class AdvancedSearchAPI(generics.CreateAPIView):
                     hs_code_list.append(obj.hs_code)
                 queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
                                            Q(FOUR_DIGIT__in=hs_code_list) |
-                                           Q(RITC__in=hs_code_list))
+                                           Q(HS_CODE__in=hs_code_list))
             if search_field == "hs_description":
                 initial_queryset = model.objects.none()
                 for value in search_value:
-                    initial_queryset = initial_queryset | queryset.filter(RITC_DISCRIPTION__icontains=value)
+                    initial_queryset = initial_queryset | queryset.filter(HS_CODE_DESCRIPTION__icontains=value)
                 queryset = initial_queryset
             if search_field == "iec_code":
                 if model == ExportTable:
-                    queryset = queryset.filter(EXPORTER_ID__in=search_value)
+                    queryset = queryset.filter(IEC__in=search_value)
                 if model == ImportTable:
                     queryset = queryset.filter(IMPORTER_ID__in=search_value)
 
@@ -333,7 +333,7 @@ class AdvancedSearchAPI(generics.CreateAPIView):
             resp_dict["exporter_count"] = queryset.distinct("EXPORTER_NAME").count()
             resp_dict["country_origin"] = queryset.distinct("COUNTRY_OF_ORIGIN").count()
             resp_dict["port_of_destination"] = queryset.distinct("PORT_OF_DISCHARGE").count()
-            resp_dict["hs_code_count"] = queryset.distinct("RITC").count()
+            resp_dict["hs_code_count"] = queryset.distinct("HS_CODE").count()
             search_obj.total_count = resp_dict
             search_obj.save()
             resp_dict["search_id"] = search_obj.id

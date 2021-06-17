@@ -240,17 +240,137 @@ class CurrencyMaster(models.Model):
         verbose_name_plural = _("CurrencyMaster")
 
 
+
+
+# class ImportRawTable(models.Model):
+#     TYPE = models.CharField(
+#             max_length=50, blank=True, null=True)
+#     DATE = models.CharField(
+#             max_length=50, blank=True, null=True)
+#     MONTH = models.CharField(
+#             max_length=10, blank=True, null=True)
+#     YEAR = models.IntegerField(blank=True, null=True)
+#     HS_CODE = models.IntegerField(blank=True, null=True)
+#     TWO_DIGIT = models.TextField(blank=True, null=True)
+#     FOUR_DIGIT = models.TextField(blank=True, null=True)
+#     HS_CODE_DESCRIPTION = models.TextField(blank=True, null=True)
+#     COMMODITY_DESCRIPTION = models.TextField(blank=True, null=True)
+#     UQC = models.TextField(blank=True, null=True)
+#     CURRENCY = models.TextField(blank=True, null=True)
+#     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+#     UNT_PRICE_FC = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     INV_VALUE_FC = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     UNT_PRICE_INR = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+#     INVOICE_NO = models.IntegerField(blank=True, null=True)
+#     BE_NO = models.IntegerField(blank=True, null=True)
+#     UNT_RATE_WITH_DUTY_INR = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     PER_UNT_DUTY_INR_INR = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     DUTY_INR = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     DUTY_USD = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     DUTY_FC = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     DUTY_PERCT = models.DecimalField(max_digits=15, decimal_places=10, blank=True, null=True)
+#     ASS_VALUE_INR = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     ASS_VALUE_USD = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     IMPORTER_VALUE_INR = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     IMPORTER_VALUE_USD = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     IMPORTER_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     ASS_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     EXCHANGE_RATE = models.IntegerField(blank=True, null=True)
+#     EXPORTER_NAME = models.TextField(blank=True, null=True)
+#     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
+#     COUNTRY_OF_ORIGIN = models.TextField(blank=True, null=True)
+#     PORT_OF_LOADING = models.TextField(blank=True, null=True)
+#     PORT_CODE = models.TextField(blank=True, null=True)
+#     PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
+#     MODE_OF_PORT = models.TextField(blank=True, null=True)
+#     IMPORTER_ID = models.TextField(blank=True, null=True)
+#     IMPORTER_NAME = models.TextField(blank=True, null=True)
+#     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
+#     IMPORTER_CITY_OR_STATE = models.TextField(blank=True, null=True)
+#     IMPORTER_PIN = models.TextField(blank=True, null=True)
+#     IMPORTER_PHONE = models.TextField(blank=True, null=True)
+#     IMPORTER_EMAIL = models.TextField(blank=True, null=True)
+#     IMPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
+#     BE_TYPE = models.TextField(blank=True, null=True)
+#     CHA_NAME = models.TextField(blank=True, null=True)
+#     RECORD_ID = models.TextField(blank=True, null=True)
+    
+#     def __str__(self):
+#         return str(self.id)
+
+#     class Meta:
+#         verbose_name_plural = _("ImportRawTable")
+    
+
+# class ExportRawTable(models.Model):
+#     TYPE = models.CharField(
+#             max_length=50, blank=True, null=True)
+#     DATE = models.CharField(
+#             max_length=50, blank=True, null=True)
+#     MONTH = models.CharField(
+#             max_length=10, blank=True, null=True)
+#     YEAR = models.IntegerField(blank=True, null=True)
+#     HS_CODE = models.IntegerField(blank=True, null=True)
+#     TWO_DIGIT = models.TextField(blank=True, null=True)
+#     FOUR_DIGIT = models.TextField(blank=True, null=True)
+#     HS_CODE_DESCRIPTION = models.TextField(blank=True, null=True)
+#     COMMODITY_DESCRIPTION = models.TextField(blank=True, null=True)
+#     UQC = models.TextField(blank=True, null=True)
+#     CURRENCY = models.TextField(blank=True, null=True)
+#     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+#     UNT_PRICE_FC = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     INV_VALUE_FC = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     UNT_PRICE_INR = models.DecimalField(max_digits=20, decimal_places=2, blank=True, null=True)
+#     INVOICE_NO = models.TextField(blank=True, null=True)
+#     SB_NO = models.IntegerField(blank=True, null=True)
+#     UNIT_RATE_WITH_FOB_INR_INR = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     PER_UNT_FOB = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     FOB_INR = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     FOB_FC = models.DecimalField(max_digits=20, decimal_places=7, blank=True, null=True)
+#     FOB_USD = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     # DUTY_PERCT = models.DecimalField(max_digits=15, decimal_places=10, blank=True, null=True)
+#     # ASS_VALUE_INR = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     # ASS_VALUE_USD = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     # IMPORTER_VALUE_INR = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     # IMPORTER_VALUE_USD = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     # IMPORTER_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     # ASS_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10, blank=True, null=True)
+#     EXCHANGE_RATE = models.IntegerField(blank=True, null=True)
+#     IMPORTER_NAME = models.TextField(blank=True, null=True)
+#     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
+#     COUNTRY_OF_ORIGIN = models.TextField(blank=True, null=True)
+#     PORT_OF_LOADING = models.TextField(blank=True, null=True)
+#     PORT_CODE = models.TextField(blank=True, null=True)
+#     PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
+#     MODE_OF_PORT = models.TextField(blank=True, null=True)
+#     IEC = models.TextField(blank=True, null=True)
+#     EXPORTER_NAME = models.TextField(blank=True, null=True)
+#     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
+#     EXPORTER_CITY = models.TextField(blank=True, null=True)
+#     EXPORTER_PIN = models.TextField(blank=True, null=True)
+#     EXPORTER_PHONE = models.TextField(blank=True, null=True)
+#     EXPORTER_EMAIL = models.TextField(blank=True, null=True)
+#     EXPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
+#     RECORD_ID = models.TextField(blank=True, null=True)
+    
+#     def __str__(self):
+#         return str(self.id)
+
+#     class Meta:
+#         verbose_name_plural = _("ExportRawTable")
+
+
 class ImportTable(models.Model):
-            
-    BE_DATE = models.DateTimeField(blank=True, null=True)
+    TYPE = models.CharField(max_length=50, blank=True, null=True)
+    BE_DATE = models.DateField(blank=True, null=True)
     MONTH = models.CharField(
             max_length=10, blank=True, null=True)
     YEAR = models.IntegerField(blank=True, null=True)
-    RITC = models.TextField(blank=True, null=True)
+    HS_CODE = models.TextField(blank=True, null=True)
     TWO_DIGIT = models.TextField(blank=True, null=True)
     FOUR_DIGIT = models.TextField(blank=True, null=True)
-    RITC_DISCRIPTION = models.TextField(blank=True, null=True)
-    commodity_description = models.TextField(null=True, blank=True)
+    HS_CODE_DESCRIPTION = models.TextField(blank=True, null=True)
+    COMMODITY_DESCRIPTION = models.TextField(null=True, blank=True)
     UQC = models.CharField(
             max_length=60, blank=True, null=True)
     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2,
@@ -262,11 +382,11 @@ class ImportTable(models.Model):
             blank=True, null=True)
     UNT_PRICE_INR = models.DecimalField(max_digits=15, decimal_places=2,
             blank=True, null=True)
-    INV_NO = models.IntegerField(blank=True, null=True)
+    INVOICE_NO = models.IntegerField(blank=True, null=True)
     BE_NO = models.BigIntegerField(blank=True, null=True)
-    UNT_RATE_WITH_DUTY = models.DecimalField(max_digits=25, decimal_places=10,
+    UNT_RATE_WITH_DUTY_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
-    PER_UNT_DUTY = models.DecimalField(max_digits=25, decimal_places=10,
+    PER_UNT_DUTY_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
     DUTY_INR = models.DecimalField(max_digits=20, decimal_places=7,
             blank=True, null=True)
@@ -274,9 +394,9 @@ class ImportTable(models.Model):
                                    blank=True, null=True)
     DUTY_FC = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
-    DUTY_PERCENT = models.DecimalField(max_digits=15, decimal_places=10,
+    DUTY_PERCT = models.DecimalField(max_digits=15, decimal_places=10,
             blank=True, null=True)
-    EX_TOTAL_VALUE = models.DecimalField(max_digits=25, decimal_places=10,
+    EX_TOTAL_VALUE_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
     ASS_VALUE_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
@@ -284,11 +404,11 @@ class ImportTable(models.Model):
             blank=True, null=True)
     ASS_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
-    importer_value_inr = models.DecimalField(max_digits=25, decimal_places=10,
+    IMPORTER_VALUE_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
-    importer_value_usd = models.DecimalField(max_digits=25, decimal_places=10,
+    IMPORTER_VALUE_USD = models.DecimalField(max_digits=25, decimal_places=10,
                                              blank=True, null=True)
-    importer_value_fc = models.DecimalField(max_digits=25, decimal_places=10,
+    IMPORTER_VALUE_FC = models.DecimalField(max_digits=25, decimal_places=10,
                                              blank=True, null=True)
     EXCHANGE_RATE = models.FloatField(null=True, blank=True)
     EXPORTER_NAME = models.TextField(blank=True, null=True)
@@ -301,25 +421,15 @@ class ImportTable(models.Model):
     IMPORTER_ID = models.TextField(blank=True, null=True)
     IMPORTER_NAME  = models.TextField(blank=True, null=True)
     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
-    IMPORTER_CITY_STATE = models.TextField(blank=True, null=True)
+    IMPORTER_CITY_OR_STATE = models.TextField(blank=True, null=True)
     IMPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
     IMPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
     IMPORTER_EMAIL = models.TextField(blank=True, null=True)
     IMPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     BE_TYPE = models.CharField(max_length=120, blank=True, null=True)
     CHA_NAME = models.TextField(blank=True, null=True)
-    Item_No = models.TextField(null=True, blank=True)
     COUNTRY = models.ForeignKey(CountryMaster, related_name='ImportTable_COUNTRY',
                  on_delete=models.CASCADE, blank=True, null=True)
-    is_deleted = models.BooleanField(default=False)
-    created_by = models.ForeignKey(
-            User, related_name='ImportTable_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    updated_by = models.ForeignKey(
-            User, related_name='ImportTable_updated_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.id)
@@ -328,16 +438,17 @@ class ImportTable(models.Model):
         verbose_name_plural = _("ImportTable")
 
 
-class ExportTable(models.Model):    
-    SB_DATE = models.DateTimeField(blank=True, null=True)
+class ExportTable(models.Model):
+    TYPE = models.CharField(max_length=50, blank=True, null=True)
+    BE_DATE = models.DateField(blank=True, null=True)
     MONTH = models.CharField(
             max_length=10, blank=True, null=True)
     YEAR = models.IntegerField(blank=True, null=True)
-    RITC = models.TextField(blank=True, null=True)
+    HS_CODE = models.TextField(blank=True, null=True)
     TWO_DIGIT = models.TextField(blank=True, null=True)
     FOUR_DIGIT = models.TextField(blank=True, null=True)
-    RITC_DISCRIPTION = models.TextField(blank=True, null=True)
-    commodity_description = models.TextField(null=True, blank=True)
+    HS_CODE_DESCRIPTION = models.TextField(blank=True, null=True)
+    COMMODITY_DESCRIPTION = models.TextField(null=True, blank=True)
     UQC = models.CharField(
             max_length=60, blank=True, null=True)
     QUANTITY = models.DecimalField(max_digits=15, decimal_places=2,
@@ -351,7 +462,7 @@ class ExportTable(models.Model):
             blank=True, null=True)
     INVOICE_NO = models.CharField(max_length=40, blank=True, null=True)
     SB_NO = models.BigIntegerField(blank=True, null=True)
-    UNIT_RATE_WITH_FOB = models.DecimalField(max_digits=25, decimal_places=10,
+    UNIT_RATE_WITH_FOB_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
     PER_UNT_FOB = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
@@ -369,7 +480,7 @@ class ExportTable(models.Model):
     PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
     PORT_CODE = models.CharField(max_length=60, blank=True, null=True)
     MODE_OF_PORT  = models.CharField(max_length=60, blank=True, null=True)
-    EXPORTER_ID = models.TextField(blank=True, null=True)
+    IEC = models.TextField(blank=True, null=True)
     EXPORTER_NAME = models.TextField(blank=True, null=True)
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     EXPORTER_CITY = models.TextField(blank=True, null=True)
@@ -380,16 +491,6 @@ class ExportTable(models.Model):
     EXPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     COUNTRY = models.ForeignKey(CountryMaster, related_name='ExportTable_COUNTRY',
                  on_delete=models.CASCADE, blank=True, null=True)
-
-    is_deleted = models.BooleanField(default=False)
-    created_by = models.ForeignKey(
-            User, related_name='ExportTable_created_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    updated_by = models.ForeignKey(
-            User, related_name='ExportTable_updated_by',
-            on_delete=models.CASCADE, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.id)
