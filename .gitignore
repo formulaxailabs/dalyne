@@ -126,6 +126,7 @@ dalyne/media/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+csv_parser.log*
 
 # Pyre type checker
 .pyre/
