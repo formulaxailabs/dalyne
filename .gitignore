@@ -130,4 +130,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 dalyne_key.pem
+dalyne_prod_key.pem
 lambda_function.py
