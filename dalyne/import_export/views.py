@@ -295,12 +295,12 @@ class AdvancedSearchAPI(generics.CreateAPIView):
 
             if request_serializer.validated_data.get("data_type") == "export":
                 model = ExportTable
-                queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
-                                                BE_DATE__date__lte=end_date)
+                queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__gte=start_date,
+                                                BE_DATE__lte=end_date)
             else:
                 model = ImportTable
-                queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
-                                                BE_DATE__date__lte=end_date)
+                queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__gte=start_date,
+                                                BE_DATE__lte=end_date)
             if search_field == "hs_code":
                 queryset = queryset.filter(Q(TWO_DIGIT__in=search_value) |
                                            Q(FOUR_DIGIT__in=search_value) |
