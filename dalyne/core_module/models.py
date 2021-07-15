@@ -364,7 +364,6 @@ class ExportTable(models.Model):
     EXPORTER_NAME = models.TextField(blank=True, null=True)
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     EXPORTER_CITY = models.TextField(blank=True, null=True)
-    EXPORTER_STATE = models.TextField(blank=True, null=True)
     EXPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
     EXPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
     EXPORTER_EMAIL = models.TextField(blank=True, null=True)
