@@ -61,16 +61,16 @@ class SubFilterListingAPI(generics.ListAPIView):
                     self.ordering_fields = ('PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'QUANTITY', 'MODE_OF_PORT',
                                             'EXPORTER_NAME', 'IMPORTER_NAME', 'UQC', 'COUNTRY_OF_ORIGIN', 'PORT_CODE',
                                             'BE_DATE', 'HS_CODE')
-                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
-                                              BE_DATE__date__lte=end_date)
+                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__gte=start_date,
+                                              BE_DATE__lte=end_date)
                 else:
                     model = ImportTable
 
                     self.ordering_fields = ('PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'QUANTITY', 'MODE_OF_PORT',
                                             'EXPORTER_NAME', 'IMPORTER_NAME', 'UQC', 'COUNTRY_OF_ORIGIN', 'PORT_CODE',
                                             'BE_DATE', 'HS_CODE')
-                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
-                                              BE_DATE__date__lte=end_date)
+                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__gte=start_date,
+                                              BE_DATE__lte=end_date)
                 if search_field == "hs_code":
                     qs = qs.filter(Q(TWO_DIGIT__in=search_value) |
                                    Q(FOUR_DIGIT__in=search_value) |
@@ -184,12 +184,12 @@ class ExportAPIView(views.APIView):
                 data_type = search_obj.data_type
                 if data_type == "export":
                     model = ExportTable
-                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
-                                              BE_DATE__date__lte=end_date)
+                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__gte=start_date,
+                                              BE_DATE__lte=end_date)
                 else:
                     model = ImportTable
-                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__date__gte=start_date,
-                                              BE_DATE__date__lte=end_date)
+                    qs = model.objects.filter(COUNTRY__name=country, BE_DATE__gte=start_date,
+                                              BE_DATE__lte=end_date)
                 if search_field == "hs_code":
                     qs = qs.filter(Q(TWO_DIGIT__in=search_value) |
                                    Q(FOUR_DIGIT__in=search_value) |
@@ -393,11 +393,11 @@ class ExporterImporterList(generics.ListAPIView):
         if data_type == "export":
             model = ExportTable
             self.search_fields = ('IMPORTER_NAME',)
-            queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
-                                            BE_DATE__date__lte=end_date).distinct('IMPORTER_NAME')
+            queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__gte=start_date,
+                                            BE_DATE__lte=end_date).distinct('IMPORTER_NAME')
         else:
             model = ImportTable
             self.search_fields = ('EXPORTER_NAME',)
-            queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__date__gte=start_date,
-                                            BE_DATE__date__lte=end_date).distinct('EXPORTER_NAME')
+            queryset = model.objects.filter(COUNTRY__id=country, BE_DATE__gte=start_date,
+                                            BE_DATE__lte=end_date).distinct('EXPORTER_NAME')
         return queryset
