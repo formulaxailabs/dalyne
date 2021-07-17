@@ -21,6 +21,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from import_export.tasks import upload_excel_file_async, upload_company_file_async
 from datetime import datetime
+from .utils.filters import ProductFilter
 
 
 class PlansListView(generics.ListAPIView):
@@ -211,30 +212,12 @@ class ProductListAPI(generics.ListAPIView):
                        )
     search_fields = ('description',)
 
+    filter_class = ProductFilter
+
     def get_queryset(self):
-        hs_code = self.request.query_params.get('hs_code')
-        digits = self.request.query_params.get('digits', None)
-        if hs_code and digits:
-            queryset = ProductMaster.objects.filter(is_deleted=False, digits=digits,
-                                                    hs_code__istartswith=hs_code).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
-
-        elif hs_code:
-            queryset = ProductMaster.objects.filter(is_deleted=False,
-                                                    hs_code__istartswith=hs_code).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
-        elif digits:
-            queryset = ProductMaster.objects.filter(is_deleted=False,
-                                                    digits=digits).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
-
-        else:
-            queryset = ProductMaster.objects.filter(is_deleted=False).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
+        queryset = ProductMaster.objects.filter(is_deleted=False).extra(
+            select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
+        ).order_by('hs_code_int')
         return queryset
 
     def list(self, request, *args, **kwargs):
