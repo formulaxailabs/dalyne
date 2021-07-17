@@ -126,8 +126,10 @@ dalyne/media/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+csv_parser.log*
 
 # Pyre type checker
 .pyre/
 dalyne_key.pem
+dalyne_prod_key.pem
 lambda_function.py
