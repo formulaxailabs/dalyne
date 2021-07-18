@@ -4,7 +4,7 @@ import xlrd
 
 from core_module.models import Plans, ImportTable, \
     CountryMaster, ExportTable, ProductMaster, \
-    CompanyMaster, FilterDataModel, Tenant
+    CompanyMaster, FilterDataModel, Tenant, User
 from custom_decorator import response_modify_decorator_get_after_execution
 from dalyne.settings import MEDIA_URL
 from django.core.files.storage import FileSystemStorage
@@ -14,7 +14,8 @@ from drf_yasg.utils import swagger_auto_schema
 from import_export.serializers import ProductMasterSerializer, CompanyMasterSerializer, ProductImportSerializer, \
     CompanyImportSerializer, \
     ExportImportUploadSerializer, CountryListSerializer, FilterDataSerializer, ImporterDataFilterSerializer, \
-    ExporterDataFilterSerializer, WorkSpaceSerializer, AddWorkSpaceSerializer, WorkSpacePatchSerializer
+    ExporterDataFilterSerializer, WorkSpaceSerializer, AddWorkSpaceSerializer, WorkSpacePatchSerializer, \
+    PlansListSerializer
 from rest_framework import status, filters, exceptions, generics, viewsets, views
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -28,10 +29,18 @@ class PlansListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
+    def get_serializer_class(self):
+        return PlansListSerializer
+
     @response_modify_decorator_get_after_execution
     def get(self, request, *args, **kwargs):
         data = {}
-        plans_data = Plans.objects.filter(is_deleted=False).values()
+        qs = Plans.objects.filter(is_deleted=False)
+        serializer = self.get_serializer_class()
+
+        plans_data = serializer(
+            qs, context={'request': request}, many=True)
+
         data['features'] = [
             'Package Validity',
             'Download Points',
@@ -46,7 +55,7 @@ class PlansListView(generics.ListAPIView):
             'Hot Companies',
             'User',
         ]
-        data['plans_list'] = plans_data
+        data['plans_list'] = plans_data.data
 
         return Response(data)
 
