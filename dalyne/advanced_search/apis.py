@@ -3,12 +3,13 @@ import uuid
 from django_filters import rest_framework as djfilters
 from django.db.models import Q
 from django.http import HttpResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, exceptions, views, filters, status
 from rest_framework.response import Response
 from core_module.models import ImportTable, ExportTable, Plans, \
     ProductMaster, CompanyMaster, CountryMaster, FilterDataModel
 from import_export.serializers import ImporterDataFilterSerializer, ExporterDataFilterSerializer
-from .serializers import ExporterNameSerializer, ImporterNameSerializer
+from .serializers import ExporterNameSerializer, ImporterNameSerializer, ExportSerializer
 
 QUERY_LIMIT = 30000
 
@@ -156,6 +157,9 @@ class ExportAPIView(views.APIView):
 
         return sheet
 
+    @swagger_auto_schema(
+        request_body=ExportSerializer,
+        operation_id="Export Data")
     def post(self, request, *args, **kwargs):
         excel_limit = QUERY_LIMIT
         search_id = self.request.data.get('search_id')
