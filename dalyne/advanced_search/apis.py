@@ -140,9 +140,19 @@ class SubFilterListingAPI(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         """ custom list method """
-        if request.query_params.get('remove_pagination'):
-            self.pagination_class = None
-        return super(SubFilterListingAPI, self).list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer_class()
+        page = self.paginate_queryset(queryset)
+        serializer = serializer(page, many=True, context={"request": request})
+        resp_dict = dict()
+        resp_dict["shipment_count"] = queryset.count()
+        resp_dict["importer_count"] = queryset.distinct("IMPORTER_NAME").count()
+        resp_dict["exporter_count"] = queryset.distinct("EXPORTER_NAME").count()
+        resp_dict["country_origin"] = queryset.distinct("COUNTRY_OF_ORIGIN").count()
+        resp_dict["port_of_destination"] = queryset.distinct("PORT_OF_DISCHARGE").count()
+        resp_dict["hs_code_count"] = queryset.distinct("HS_CODE").count()
+        resp_dict["data"] = serializer.data
+        return self.get_paginated_response(resp_dict)
 
 
 class ExportAPIView(views.APIView):
