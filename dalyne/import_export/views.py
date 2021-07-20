@@ -23,6 +23,7 @@ from rest_framework.response import Response
 from import_export.tasks import upload_excel_file_async, upload_company_file_async
 from datetime import datetime
 from .utils.filters import ProductFilter
+from dateutil.relativedelta import relativedelta
 
 
 class PlansListView(generics.ListAPIView):
@@ -257,7 +258,7 @@ class CompanyListAPI(generics.ListAPIView):
 
 
 class AdvancedSearchAPI(generics.CreateAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     filter_backends = (djfilters.DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter,
@@ -271,6 +272,12 @@ class AdvancedSearchAPI(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         request_serializer = self.serializer_class(data=self.request.data)
         if request_serializer.is_valid(raise_exception=True):
+            start_date = request_serializer.validated_data.get("start_date")
+            end_date = request_serializer.validated_data.get("end_date")
+            time_difference = relativedelta(end_date, start_date)
+            if time_difference.years > 3:
+                return Response({"error": "Time range cannot be greater than 3 Years"},
+                                status=status.HTTP_400_BAD_REQUEST)
             country_id = request_serializer.validated_data.pop("country")
             search_obj = request_serializer.save()
             country_obj = CountryMaster.objects.get(id=country_id)
@@ -280,8 +287,7 @@ class AdvancedSearchAPI(generics.CreateAPIView):
             search_obj.save()
             resp_dict = dict()
             country = country_id
-            start_date = request_serializer.validated_data.get("start_date")
-            end_date = request_serializer.validated_data.get("end_date")
+
             search_field = request_serializer.validated_data.get("search_field")
             search_value = request_serializer.validated_data.get("search_value")
 
@@ -301,14 +307,6 @@ class AdvancedSearchAPI(generics.CreateAPIView):
                 queryset = queryset.filter(IMPORTER_NAME__in=search_value)
             if search_field == "exporter_name":
                 queryset = queryset.filter(EXPORTER_NAME__in=search_value)
-            if search_field == "product":
-                product_qs = ProductMaster.objects.filter(description__in=search_value)
-                hs_code_list = list()
-                for obj in product_qs:
-                    hs_code_list.append(obj.hs_code)
-                queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
-                                           Q(FOUR_DIGIT__in=hs_code_list) |
-                                           Q(HS_CODE__in=hs_code_list))
             if search_field == "hs_description":
                 initial_queryset = model.objects.none()
                 for value in search_value:

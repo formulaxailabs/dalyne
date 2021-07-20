@@ -11,7 +11,7 @@ from core_module.models import ImportTable, ExportTable, Plans, \
 from import_export.serializers import ImporterDataFilterSerializer, ExporterDataFilterSerializer
 from .serializers import ExporterNameSerializer, ImporterNameSerializer, ExportSerializer
 
-QUERY_LIMIT = 30000
+QUERY_LIMIT = 500000
 
 
 class SubFilterListingAPI(generics.ListAPIView):
