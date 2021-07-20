@@ -258,7 +258,7 @@ class CompanyListAPI(generics.ListAPIView):
 
 
 class AdvancedSearchAPI(generics.CreateAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     filter_backends = (djfilters.DjangoFilterBackend,
                        filters.SearchFilter,
                        filters.OrderingFilter,
