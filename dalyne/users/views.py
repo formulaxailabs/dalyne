@@ -57,50 +57,56 @@ class CreateUserView(generics.CreateAPIView):
         return super().post(request, *args, **kwargs)
 
 
-class LoginView(KnoxLoginView):
+class LoginView(KnoxLoginView, generics.CreateAPIView):
     permission_classes = [AllowAny]
     queryset = get_user_model().objects.all()
     parser_classes = (MultiPartParser, FormParser, JSONParser)
+    serializer_class = AuthTokenSerializer
 
     @response_modify_decorator_post
     def post(self, request, format=None):
-        data = {}
-        with transaction.atomic():
-            user_exist = self.queryset.filter(
-                email=request.data['email']).exists()
-            if not user_exist:
-                raise CustomAPIException(
-                    None,
-                    'You Have Entered An Invalid Email Address',
-                    status_code=status.HTTP_400_BAD_REQUEST)
-            user_is_active = self.queryset.filter(
-                email=request.data['email'],
-                is_active=True)
-            if not user_is_active:
-                raise CustomAPIException(
-                    None,
-                    "sorry, Account is not active !",
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            serializer = AuthTokenSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            user = serializer.validated_data['user']
-            response = super(LoginView, self).post(request, format=None)
-            user_detials = self.queryset.get(email=user)
-            user_detials.last_login = datetime.now()
-            user_detials.save()
-            profile_query = Profile.objects.filter(user=user)
-            if profile_query:
-                first_name = profile_query.get().firstname
-                data['message'] = f'Hello {first_name}, Welcome Back!'
-            data['token'] = response.data['token']
-            data['token_expiry'] = response.data['expiry']
-            data['user_details'] = {
-                        "user_id": user_detials.id,
-                        "name": user_detials.name,
-                        "email": user_detials.email,
-            }
-            return Response(data)
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            data = {}
+            with transaction.atomic():
+                user_exist = self.queryset.filter(
+                    email=request.data['email']).exists()
+                if not user_exist:
+                    raise CustomAPIException(
+                        None,
+                        'You Have Entered An Invalid Email Address',
+                        status_code=status.HTTP_400_BAD_REQUEST)
+                user_is_active = self.queryset.filter(
+                    email=request.data['email'],
+                    is_active=True)
+                if not user_is_active:
+                    raise CustomAPIException(
+                        None,
+                        "sorry, Account is not active !",
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                user = serializer.validated_data['user']
+                response = super(LoginView, self).post(request, format=None)
+                user_detials = self.queryset.get(email=user)
+                user_detials.last_login = datetime.now()
+                user_detials.save()
+                profile_query = Profile.objects.filter(user=user)
+                if profile_query:
+                    first_name = profile_query.get().firstname
+                    data['message'] = f'Hello {first_name}, Welcome Back!'
+                data['token'] = response.data['token']
+                data['token_expiry'] = response.data['expiry']
+                data['user_details'] = {
+                            "user_id": user_detials.id,
+                            "name": user_detials.name,
+                            "email": user_detials.email,
+                }
+                return Response(data)
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 
