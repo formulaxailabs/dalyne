@@ -4,7 +4,7 @@ import xlrd
 
 from core_module.models import Plans, ImportTable, \
     CountryMaster, ExportTable, ProductMaster, \
-    CompanyMaster, FilterDataModel, Tenant
+    CompanyMaster, FilterDataModel, Tenant, User
 from custom_decorator import response_modify_decorator_get_after_execution
 from dalyne.settings import MEDIA_URL
 from django.core.files.storage import FileSystemStorage
@@ -14,23 +14,34 @@ from drf_yasg.utils import swagger_auto_schema
 from import_export.serializers import ProductMasterSerializer, CompanyMasterSerializer, ProductImportSerializer, \
     CompanyImportSerializer, \
     ExportImportUploadSerializer, CountryListSerializer, FilterDataSerializer, ImporterDataFilterSerializer, \
-    ExporterDataFilterSerializer, WorkSpaceSerializer, AddWorkSpaceSerializer, WorkSpacePatchSerializer
+    ExporterDataFilterSerializer, WorkSpaceSerializer, AddWorkSpaceSerializer, WorkSpacePatchSerializer, \
+    PlansListSerializer
 from rest_framework import status, filters, exceptions, generics, viewsets, views
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from import_export.tasks import upload_excel_file_async, upload_company_file_async
 from datetime import datetime
+from .utils.filters import ProductFilter
+from dateutil.relativedelta import relativedelta
 
 
 class PlansListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
+    def get_serializer_class(self):
+        return PlansListSerializer
+
     @response_modify_decorator_get_after_execution
     def get(self, request, *args, **kwargs):
         data = {}
-        plans_data = Plans.objects.filter(is_deleted=False).values()
+        qs = Plans.objects.filter(is_deleted=False)
+        serializer = self.get_serializer_class()
+
+        plans_data = serializer(
+            qs, context={'request': request}, many=True)
+
         data['features'] = [
             'Package Validity',
             'Download Points',
@@ -45,7 +56,7 @@ class PlansListView(generics.ListAPIView):
             'Hot Companies',
             'User',
         ]
-        data['plans_list'] = plans_data
+        data['plans_list'] = plans_data.data
 
         return Response(data)
 
@@ -211,30 +222,12 @@ class ProductListAPI(generics.ListAPIView):
                        )
     search_fields = ('description',)
 
+    filter_class = ProductFilter
+
     def get_queryset(self):
-        hs_code = self.request.query_params.get('hs_code')
-        digits = self.request.query_params.get('digits', None)
-        if hs_code and digits:
-            queryset = ProductMaster.objects.filter(is_deleted=False, digits=digits,
-                                                    hs_code__istartswith=hs_code).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
-
-        elif hs_code:
-            queryset = ProductMaster.objects.filter(is_deleted=False,
-                                                    hs_code__istartswith=hs_code).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
-        elif digits:
-            queryset = ProductMaster.objects.filter(is_deleted=False,
-                                                    digits=digits).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
-
-        else:
-            queryset = ProductMaster.objects.filter(is_deleted=False).extra(
-                select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
-            ).order_by('hs_code_int')
+        queryset = ProductMaster.objects.filter(is_deleted=False).extra(
+            select={'hs_code_int': 'CAST(hs_code AS INTEGER)'}
+        ).order_by('hs_code_int')
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -279,6 +272,12 @@ class AdvancedSearchAPI(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         request_serializer = self.serializer_class(data=self.request.data)
         if request_serializer.is_valid(raise_exception=True):
+            start_date = request_serializer.validated_data.get("start_date")
+            end_date = request_serializer.validated_data.get("end_date")
+            time_difference = relativedelta(end_date, start_date)
+            if time_difference.years > 3:
+                return Response({"error": "Time range cannot be greater than 3 Years"},
+                                status=status.HTTP_400_BAD_REQUEST)
             country_id = request_serializer.validated_data.pop("country")
             search_obj = request_serializer.save()
             country_obj = CountryMaster.objects.get(id=country_id)
@@ -288,8 +287,7 @@ class AdvancedSearchAPI(generics.CreateAPIView):
             search_obj.save()
             resp_dict = dict()
             country = country_id
-            start_date = request_serializer.validated_data.get("start_date")
-            end_date = request_serializer.validated_data.get("end_date")
+
             search_field = request_serializer.validated_data.get("search_field")
             search_value = request_serializer.validated_data.get("search_value")
 
@@ -309,14 +307,6 @@ class AdvancedSearchAPI(generics.CreateAPIView):
                 queryset = queryset.filter(IMPORTER_NAME__in=search_value)
             if search_field == "exporter_name":
                 queryset = queryset.filter(EXPORTER_NAME__in=search_value)
-            if search_field == "product":
-                product_qs = ProductMaster.objects.filter(description__in=search_value)
-                hs_code_list = list()
-                for obj in product_qs:
-                    hs_code_list.append(obj.hs_code)
-                queryset = queryset.filter(Q(TWO_DIGIT__in=hs_code_list) |
-                                           Q(FOUR_DIGIT__in=hs_code_list) |
-                                           Q(HS_CODE__in=hs_code_list))
             if search_field == "hs_description":
                 initial_queryset = model.objects.none()
                 for value in search_value:
