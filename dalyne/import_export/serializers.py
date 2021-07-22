@@ -134,10 +134,11 @@ class ExporterDataFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExportTable
-        fields = ('id', 'BE_DATE', 'TWO_DIGIT', 'FOUR_DIGIT', 'HS_CODE', 'HS_CODE_DESCRIPTION', 'UQC', 'QUANTITY', 'IMPORTER_NAME',
-                  'EXPORTER_NAME', 'CURRENCY', 'SB',  'UNT_PRICE_FC', 'INV_VALUE_FC', 'UNT_PRICE_INR', 'INVOICE_NO',
-                  'SB_NO', 'UNIT_RATE_WITH_FOB_INR', 'PER_UNT_FOB', 'FOB_INR', 'FOB_FC', 'FOB_USD', 'EXCHANGE_RATE',
-                  'EXPORTER_ADDRESS', 'EXPORTER_CITY', 'EXPORTER_PIN', 'IMPORTER_ADDRESS',
+        # fields = "__all__"
+        fields = ('id', 'BE_DATE', 'TWO_DIGIT', 'FOUR_DIGIT', 'HS_CODE', 'HS_CODE_DESCRIPTION', 'UQC', 'QUANTITY',
+                  'IMPORTER_NAME', 'EXPORTER_NAME', 'CURRENCY', 'SB_NO',  'UNT_PRICE_FC', 'INV_VALUE_FC', 'UNT_PRICE_INR',
+                  'INVOICE_NO', 'SB_NO', 'UNIT_RATE_WITH_FOB_INR', 'PER_UNT_FOB', 'FOB_INR', 'FOB_FC', 'FOB_USD',
+                  'EXCHANGE_RATE', 'EXPORTER_ADDRESS', 'EXPORTER_CITY', 'EXPORTER_PIN', 'IMPORTER_ADDRESS',
                   'COUNTRY_OF_ORIGIN', 'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'MODE_OF_PORT', 'PORT_CODE', 'iec',
                   'MONTH', 'YEAR')
 
