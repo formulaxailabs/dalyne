@@ -10,6 +10,7 @@ from core_module.models import ImportTable, ExportTable, Plans, \
     ProductMaster, CompanyMaster, CountryMaster, FilterDataModel
 from import_export.serializers import ImporterDataFilterSerializer, ExporterDataFilterSerializer
 from .serializers import ExporterNameSerializer, ImporterNameSerializer, ExportSerializer
+from .models import RequestedDownloadModel
 
 QUERY_LIMIT = 500000
 
@@ -161,7 +162,6 @@ class ExportAPIView(views.APIView):
     def write_header(self, sheet, header):
         font_style = xlwt.XFStyle()
         font_style.font.bold = True
-
         for index, header_value in enumerate(header):
             sheet.write(0, index, header_value, font_style)
 
@@ -172,6 +172,19 @@ class ExportAPIView(views.APIView):
         operation_id="Export Data")
     def post(self, request, *args, **kwargs):
         excel_limit = QUERY_LIMIT
+        requested_qs = RequestedDownloadModel.objects.filter(user_id=self.request.user.id).first()
+        try:
+            if not requested_qs:
+                download_points = self.request.user.userplans_set.all().first().plans.download_points
+            else:
+                download_points = requested_qs.remaining_points
+        except:
+            download_points = 0
+
+        if download_points == 0:
+            return Response({'msg': f"Please choose the appropriate plan to download the shipments.Current Plan"
+                                    f"has {download_points} download points"},
+                            status=status.HTTP_400_BAD_REQUEST)
         search_id = self.request.data.get('search_id')
         exporter = self.request.data.get('exporter', None)
         importer = self.request.data.get('importer', None)
@@ -271,6 +284,30 @@ class ExportAPIView(views.APIView):
                     queryset = qs.filter(id__in=ids)
                 else:
                     queryset = qs
+
+                downloaded_ids = [obj.id for obj in queryset]
+                if requested_qs:
+                    download = requested_qs.downloaded_ids
+                    downloaded_ids = list(set(downloaded_ids).difference(set(download)))
+                remaining_points = download_points - len(downloaded_ids)
+                if remaining_points <= 0:
+                    return Response({'msg': f"You need {abs(remaining_points)}  more points "
+                                            f"to download the data requested by you. "
+                                            f"So adjust the download range or upgrade your plan"
+                                            f" accordingly"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                if not requested_qs:
+                    RequestedDownloadModel.objects.create(
+                        user=self.request.user,
+                        downloaded_ids=downloaded_ids,
+                        remaining_points=remaining_points
+                    )
+                else:
+                    if downloaded_ids:
+                        requested_qs.downloaded_ids.extend(downloaded_ids)
+                        requested_qs.remaining_points = remaining_points
+                        requested_qs.save()
+
                 if model == ExportTable:
                     response = HttpResponse(content_type='application/ms-excel')
                     filename = "Exporters_" + "shipments" + "_" + str(uuid.uuid4())[-4:] + ".xls"
