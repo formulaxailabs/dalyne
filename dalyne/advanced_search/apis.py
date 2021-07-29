@@ -463,9 +463,7 @@ class DownloadMessage(views.APIView):
 
     def get(self, request, *args, **kwargs):
         tenant = self.request.user.tenant
-        user = 0
-        if user is not None:
-            requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id).first()
+        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id).first()
         if requested_qs:
             message = f"Thank You for downloading the Shipments data.You are now left with " \
                       f"{requested_qs.remaining_points} download points "
