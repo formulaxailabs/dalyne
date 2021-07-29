@@ -173,10 +173,10 @@ class ExportAPIView(views.APIView):
     def post(self, request, *args, **kwargs):
         excel_limit = QUERY_LIMIT
         tenant = self.request.user.tenant
-        requested_qs = RequestedDownloadModel.objects.filter(user_id=self.request.user.id).first()
+        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id).first()
         try:
             if not requested_qs:
-                download_points = self.request.user.userplans_set.all().first().plans.download_points
+                download_points = tenant.userplans_set.all().first().plans.download_points
             else:
                 download_points = requested_qs.remaining_points
         except:
@@ -326,7 +326,8 @@ class ExportAPIView(views.APIView):
 
                     fields = ['BE_DATE', 'MONTH', 'YEAR', 'HS_CODE', 'TWO_DIGIT', 'FOUR_DIGIT', 'HS_CODE_DESCRIPTION',
                               'COMMODITY_DESCRIPTION', 'UQC', 'QUANTITY', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC',
-                              'UNT_PRICE_INR', 'INVOICE_NO', 'SB_NO', 'UNIT_RATE_WITH_FOB_INR', 'PER_UNT_FOB', 'FOB_INR',
+                              'UNT_PRICE_INR', 'INVOICE_NO', 'SB_NO', 'UNIT_RATE_WITH_FOB_INR', 'PER_UNT_FOB',
+                              'FOB_INR',
                               'FOB_FC', 'FOB_USD', 'EXCHANGE_RATE', 'IMPORTER_NAME', 'IMPORTER_ADDRESS',
                               'COUNTRY_OF_ORIGIN',
                               'PORT_OF_LOADING', 'PORT_OF_DISCHARGE', 'PORT_CODE', 'MODE_OF_PORT', 'IEC',
@@ -378,7 +379,8 @@ class ExportAPIView(views.APIView):
 
                     fields = ['BE_DATE', 'MONTH', 'YEAR', 'HS_CODE', 'TWO_DIGIT', 'FOUR_DIGIT', 'HS_CODE_DESCRIPTION',
                               'UQC', 'QUANTITY', 'CURRENCY', 'UNT_PRICE_FC', 'INV_VALUE_FC',
-                              'UNT_PRICE_INR', 'INVOICE_NO', 'BE_NO', 'UNT_RATE_WITH_DUTY_INR', 'PER_UNT_DUTY_INR', 'DUTY_INR',
+                              'UNT_PRICE_INR', 'INVOICE_NO', 'BE_NO', 'UNT_RATE_WITH_DUTY_INR', 'PER_UNT_DUTY_INR',
+                              'DUTY_INR',
                               'DUTY_FC',
                               'DUTY_PERCT', 'EX_TOTAL_VALUE_INR', 'ASS_VALUE_INR', 'ASS_VALUE_USD', 'ASS_VALUE_FC',
                               'EXCHANGE_RATE', 'EXPORTER_NAME', 'EXPORTER_ADDRESS', 'COUNTRY_OF_ORIGIN',
@@ -457,9 +459,17 @@ class ExporterImporterList(generics.ListAPIView):
 
 class DownloadMessage(views.APIView):
     model = RequestedDownloadModel
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        pass
+        tenant = self.request.user.tenant
+        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id).first()
+        if requested_qs:
+            message = f"Thank You for downloading the Shipments data.You are now left with " \
+                      f"{requested_qs.remaining_points} download points "
+        else:
+            message = None
+        return Response(message, status=status.HTTP_200_OK)
 
 
 class OrderingListingAPI(generics.ListAPIView):
@@ -585,5 +595,3 @@ class OrderingListingAPI(generics.ListAPIView):
                 return {}
         else:
             return {}
-
-

@@ -1,11 +1,11 @@
 from django.db import models
-from core_module.models import User
+from core_module.models import User, Tenant
 # Create your models here.
 
 
 class RequestedDownloadModel(models.Model):
-    user = models.ForeignKey(
-        User,
+    tenant = models.ForeignKey(
+        Tenant,
         null=True,
         blank=True,
         related_name="user_downloads",
