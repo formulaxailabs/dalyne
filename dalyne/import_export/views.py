@@ -276,7 +276,9 @@ class AdvancedSearchAPI(generics.CreateAPIView):
             end_date = request_serializer.validated_data.get("end_date")
             time_difference = relativedelta(end_date, start_date)
             if time_difference.years > 3:
-                return Response({"error": "Time range cannot be greater than 3 Years"},
+                return Response({"error": "Attempt Failed! You can't select time"
+                                          "more than 3 years. Please select the appropriate "
+                                          "range of search."},
                                 status=status.HTTP_400_BAD_REQUEST)
             country_id = request_serializer.validated_data.pop("country")
             search_obj = request_serializer.save()
