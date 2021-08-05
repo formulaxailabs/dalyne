@@ -287,6 +287,10 @@ class ExportAPIView(views.APIView):
                     queryset = qs
 
                 downloaded_ids = [obj.id for obj in queryset]
+                if len(downloaded_ids) >= excel_limit:
+                    return Response({'msg': f"You have exceeded the limit of 5 lacs."
+                                            f"Please change/select the appropriate range of"
+                                            f"search/download."})
                 if requested_qs:
                     download = requested_qs.downloaded_ids
                     downloaded_ids = list(set(downloaded_ids).difference(set(download)))
