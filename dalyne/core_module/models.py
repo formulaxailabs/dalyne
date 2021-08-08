@@ -500,3 +500,36 @@ class FilterDataModel(models.Model):
 
     def deactivate_workspace(self):
         self.is_active = False
+
+
+class TransactionsModel(models.Model):
+    plan = models.ForeignKey(
+        Plans,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="plan_detail"
+    )
+    cost = models.IntegerField(
+        null=True,
+        blank=True
+    )
+    order_id = models.CharField(
+        max_length=100
+    )
+    order_date = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        blank=True
+    )
+    modified_on = models.DateTimeField(
+        auto_now=True,
+        null=True,
+        blank=True
+    )
+    is_transaction_successful = models.BooleanField(
+        default=False
+    )
+
+    def __str__(self):
+        return f"{self.plan.name} => {self.order_id}"

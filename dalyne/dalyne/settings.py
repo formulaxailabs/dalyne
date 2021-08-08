@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'import_export',
     'drf_yasg',
     'django_filters',
-    'advanced_search'
+    'advanced_search',
+    'user_transactions',
+
 
 ]
 
@@ -224,3 +226,8 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+# =======================Razorpay====================================#
+
+RAZORPAY_KEY = 'rzp_test_cSVPcKd5oNyHFJ'
+RAZORPAY_SECRET = 'SalQLidhjeiYjfVj4wnbgRNs'
