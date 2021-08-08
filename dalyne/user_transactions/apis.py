@@ -57,33 +57,41 @@ class CapturePaymentAPI(generics.CreateAPIView):
         client = get_razorpay_client()
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            order = TransactionsModel.objects.get(id=serializer.validated_data['razorpay_order_id'])
-            amount = order.cost * 100
+            order = TransactionsModel.objects.get(order_id=serializer.validated_data['razorpay_order_id'])
             data = dict(serializer.validated_data)
-            check = client.utility.verify_payment_signature(data)
-            if check is not None:
-                return response.Response(
-                    {
-                        'error': 'Oops!! Payment cannot be processed at this moment.Please try again.'
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             try:
-                payment_id = serializer.validated_data['razorpay_payment_id']
-                client.payment.capture(payment_id, amount)
-                order.is_transaction_successful = True
-                order.save()
+                check = client.utility.verify_payment_signature(data)
+                if check is not None:
+                    return response.Response(
+                        {
+                            'error': 'Oops!! Payment cannot be processed at this moment.Please try again.'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
+                amount = order.cost * 100
+                try:
+                    payment_id = serializer.validated_data['razorpay_payment_id']
+                    client.payment.capture(payment_id, amount)
+                    order.is_transaction_successful = True
+                    order.save()
+
+                    return response.Response(
+                        {'msg': 'Payment successfully received'},
+                        status=status.HTTP_200_OK
+                    )
+                except:
+                    return response.Response(
+                        {
+                            'error': 'Oops!! Payment cannot be processed at this moment.Please try again.'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except Exception as e:
                 return response.Response(
-                    {'msg': 'Payment successfully received'},
-                    status=status.HTTP_200_OK
-                )
-            except:
-                return response.Response(
-                    {
-                        'error': 'Oops!! Payment cannot be processed at this moment.Please try again.'
-                    },
+                    {'error': e.args[0]},
                     status=status.HTTP_400_BAD_REQUEST
+
                 )
 
         else:
