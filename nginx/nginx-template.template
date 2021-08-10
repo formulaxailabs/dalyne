@@ -8,8 +8,8 @@ server {
     # server_name app;
 
     listen 443 ssl;
-    ssl_certificate /home/ubuntu/ssl/dalyne.crt;
-    ssl_certificate_key /home/ubuntu/ssl/dalyne.key;
+    ssl_certificate ssl_volume/dalyne.crt;
+    ssl_certificate_key ssl_volume/dalyne.key;
 
     location / {
         # everything is passed to Gunicorn
