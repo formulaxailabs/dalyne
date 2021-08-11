@@ -133,7 +133,7 @@ class SubFilterListingAPI(generics.ListAPIView):
                         raise exceptions.ValidationError("Both min quantity and max quantity are required")
                     else:
                         qs = qs.filter(QUANTITY__gte=min_qty, QUANTITY__lte=max_qty)
-                return qs
+                return qs[:1000]
             else:
                 return {}
         else:
@@ -594,7 +594,7 @@ class OrderingListingAPI(generics.ListAPIView):
                         raise exceptions.ValidationError("Both min quantity and max quantity are required")
                     else:
                         qs = qs.filter(QUANTITY__gte=min_qty, QUANTITY__lte=max_qty)
-                return qs
+                return qs[:1000]
             else:
                 return {}
         else:
