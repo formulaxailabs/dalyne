@@ -133,7 +133,7 @@ class SubFilterListingAPI(generics.ListAPIView):
                         raise exceptions.ValidationError("Both min quantity and max quantity are required")
                     else:
                         qs = qs.filter(QUANTITY__gte=min_qty, QUANTITY__lte=max_qty)
-                return qs[:1000]
+                return qs
             else:
                 return {}
         else:
@@ -142,8 +142,9 @@ class SubFilterListingAPI(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         """ custom list method """
         queryset = self.filter_queryset(self.get_queryset())
+        limit_qs = queryset[:1000]
         serializer = self.get_serializer_class()
-        page = self.paginate_queryset(queryset)
+        page = self.paginate_queryset(limit_qs)
         serializer = serializer(page, many=True, context={"request": request})
         resp_dict = dict()
         resp_dict["shipment_count"] = queryset.count()
