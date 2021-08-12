@@ -69,31 +69,18 @@ class CapturePaymentAPI(generics.CreateAPIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                amount = order.cost * 100
-                try:
-                    payment_id = serializer.validated_data['razorpay_payment_id']
-                    client.payment.capture(payment_id, amount)
-                    order.is_transaction_successful = True
-                    order.save()
-
-                    return response.Response(
-                        {'msg': 'Payment successfully received'},
-                        status=status.HTTP_200_OK
-                    )
-                except:
-                    return response.Response(
-                        {
-                            'error': 'Oops!! Payment cannot be processed at this moment.Please try again.'
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                order.is_transaction_successful = True
+                order.save()
+                return response.Response(
+                    {'msg': 'Payment successfully received'},
+                    status=status.HTTP_200_OK
+                )
             except Exception as e:
                 return response.Response(
                     {'error': e.args[0]},
                     status=status.HTTP_400_BAD_REQUEST
 
                 )
-
         else:
             return response.Response(
                 serializer.errors,
