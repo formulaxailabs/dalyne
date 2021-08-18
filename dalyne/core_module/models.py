@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,PermissionsMixin
@@ -33,6 +34,35 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+
+class UserOtp(models.Model):
+    """ model for user otp"""
+
+    email = models.EmailField(
+        null=True,
+        blank=True,
+        max_length=255
+    )
+    otp = models.CharField(
+        max_length=5
+    )
+    created_on = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        blank=True)
+
+    def __str__(self):
+        return "{0}-{1}".format(self.email, self.otp)
+
+    def get_email(self):
+        return self.email
+
+    def get_otp(self):
+        return self.otp
+
+    def get_created_time(self):
+        return self.created_on
 
 
 class Tenant(models.Model):

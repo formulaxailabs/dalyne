@@ -89,7 +89,7 @@ ROOT_URLCONF = 'dalyne.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -123,14 +123,13 @@ DATABASES = {
 
 
 #===============Email================================#
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_FROM_C = 'noreply@formulaxai.com'
-DEFAULT_FROM_EMAIL = 'noreply@formulaxai.com'
-SERVER_EMAIL = 'noreply@formulaxai.com'
-EMAIL_HOST = 'mail.formulaxai.comt'
-EMAIL_HOST_USER = 'noreply@formulaxai.com'
-EMAIL_HOST_PASSWORD = 'Website@123'
-EMAIL_PORT = 465
+
+SENDGRID_API_KEY = "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"
+EMAIL_BACKEND = "sgbackend.SendGridBackend"
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = "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"
+DEFAULT_FROM_EMAIL = "no-reply@eximine.com"
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 #====================Celery=====================================#
