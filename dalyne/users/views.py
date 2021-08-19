@@ -1,5 +1,6 @@
 import random
 from django.shortcuts import render
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, views
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
@@ -19,7 +20,8 @@ from custom_decorator import response_modify_decorator_post, \
         response_decorator_list_or_get_after_execution_onoff_pagination, \
         response_modify_decorator_get_single_after_execution
 from users.knox_views.views import LoginView as KnoxLoginView, LogoutAllView
-from users.serializers import UserSerializer, AuthTokenSerializer, UserOtpSerializer, VerifyOTPSerializer
+from users.serializers import UserSerializer, AuthTokenSerializer, UserOtpSerializer, VerifyOTPSerializer, \
+    ProfileSerializer, ChangePasswordSerializer
 from rest_framework.exceptions import APIException
 from datetime import datetime
 from django.utils.http import urlsafe_base64_encode
@@ -162,6 +164,42 @@ class VerifyOTPView(generics.CreateAPIView):
             return Response({"msg": "Email address has been successfully verified"},
                             status=status.HTTP_200_OK)
 
+
+class ProfileAPI(generics.ListAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = (IsAuthenticated,)
+    model = Profile
+    pagination_class = None
+
+    def get_queryset(self):
+        return self.model.objects.filter(user=self.request.user)
+
+
+class ChangePasswordView(views.APIView):
+    """ change user password for authenticated user """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer
+
+    @swagger_auto_schema(
+        request_body=ChangePasswordSerializer,
+        operation_id="Change password")
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.serializer_class(
+            data=request.data, context={"request": request})
+        if serializer.is_valid(raise_exception=True):
+            request.user.set_password(
+                serializer.validated_data["new_password"])
+            request.user.save()
+            return Response(
+                {"msg": "Password successfully changed"},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"error": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 
