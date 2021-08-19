@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import ugettext_lazy as _
 from django.db import transaction
 from core_module.models import Profile, UserPlans, Tenant, UserOtp
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from rest_framework import status
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
@@ -152,4 +152,68 @@ class VerifyOTPSerializer(serializers.Serializer):
             self.user_otp = UserOtp.objects.get(otp=otp, email=data['email'])
         except UserOtp.DoesNotExist:
             raise serializers.ValidationError("Invalid OTP")
+        return data
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    company_name = serializers.SerializerMethodField()
+    total_download_points = serializers.SerializerMethodField()
+    total_search_points = serializers.SerializerMethodField()
+    remaining_download_points = serializers.SerializerMethodField()
+    remaining_search_points = serializers.SerializerMethodField()
+
+    def get_total_search_points(self, obj):
+        try:
+            return obj.user.userplans_set.first().plans.searches
+        except:
+            return None
+
+    def get_total_download_points(self, obj):
+        try:
+            return obj.user.userplans_set.first().plans.download_points
+        except:
+            return None
+
+    def get_remaining_download_points(self, obj):
+        try:
+            return obj.user.tenant.user_downloads.first().remaining_points
+        except:
+            return None
+
+    def get_remaining_search_points(self, obj):
+        return None
+
+    def get_company_name(self, obj):
+        try:
+            return obj.user.tenant.company_name
+        except:
+            return None
+
+    class Meta:
+        model = Profile
+        fields = ('firstname', 'lastname', 'email', 'phone_no', 'profile_pic', 'company_name',
+                  'total_download_points', 'total_search_points', 'remaining_search_points',
+                  'remaining_download_points')
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """ change password serializer """
+    new_password = serializers.CharField(style={'input_type': 'password'},
+                                         trim_whitespace=False,
+                                         required=True
+                                         )
+    old_password = serializers.CharField(write_only=True)
+
+    def validate_old_password(self, attrs):
+        if self.context['request'].user.check_password(attrs):
+            return attrs
+        else:
+            raise serializers.ValidationError("Please enter correct password")
+
+    def validate_new_password(self, data):
+
+        if self.context['request'].user.check_password(data):
+            raise exceptions.ValidationError("New password cannot be same as old password")
+        if len(data) == 0:
+            raise exceptions.ValidationError("New password should not be empty")
         return data
