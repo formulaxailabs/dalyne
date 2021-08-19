@@ -1,0 +1,1 @@
+Hey, Use <b>{{otp_code}}</b> to verify your email address on Dalyne. Do not share this code to anyone for security reasons

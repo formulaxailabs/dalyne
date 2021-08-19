@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model, authenticate
 from django.utils.translation import ugettext_lazy as _
 from django.db import transaction
-from core_module.models import Profile, UserPlans, Tenant
+from core_module.models import Profile, UserPlans, Tenant, UserOtp
 from rest_framework import serializers
 from rest_framework import status
 from django.contrib.sites.shortcuts import get_current_site
@@ -130,3 +130,26 @@ class AuthTokenSerializer(serializers.Serializer):
                 status_code=status.HTTP_400_BAD_REQUEST)
         attrs['user'] = user
         return attrs
+
+
+class UserOtpSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True,
+                                  allow_null=False,
+                                  allow_blank=False
+                                  )
+
+    class Meta:
+        fields = ('email',)
+
+
+class VerifyOTPSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=255)
+    email = serializers.CharField()
+
+    def validate(self, data):
+        otp = data['otp']
+        try:
+            self.user_otp = UserOtp.objects.get(otp=otp, email=data['email'])
+        except UserOtp.DoesNotExist:
+            raise serializers.ValidationError("Invalid OTP")
+        return data
