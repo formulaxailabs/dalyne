@@ -292,7 +292,7 @@ class ImportTable(models.Model):
             blank=True, null=True)
     UNT_PRICE_INR = models.DecimalField(max_digits=15, decimal_places=2,
             blank=True, null=True)
-    INVOICE_NO = models.IntegerField(blank=True, null=True)
+    INVOICE_NO = models.TextField(blank=True, null=True)
     BE_NO = models.BigIntegerField(blank=True, null=True)
     UNT_RATE_WITH_DUTY_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
@@ -333,7 +333,7 @@ class ImportTable(models.Model):
     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
     IMPORTER_CITY_OR_STATE = models.TextField(blank=True, null=True)
     IMPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
-    IMPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
+    IMPORTER_PHONE = models.TextField(blank=True, null=True)
     IMPORTER_EMAIL = models.TextField(blank=True, null=True)
     IMPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     BE_TYPE = models.CharField(max_length=120, blank=True, null=True)
@@ -370,7 +370,7 @@ class ExportTable(models.Model):
             blank=True, null=True)
     UNT_PRICE_INR = models.DecimalField(max_digits=15, decimal_places=2,
             blank=True, null=True)
-    INVOICE_NO = models.CharField(max_length=40, blank=True, null=True)
+    INVOICE_NO = models.TextField(blank=True, null=True)
     SB_NO = models.BigIntegerField(blank=True, null=True)
     UNIT_RATE_WITH_FOB_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
@@ -395,7 +395,7 @@ class ExportTable(models.Model):
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     EXPORTER_CITY = models.TextField(blank=True, null=True)
     EXPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
-    EXPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
+    EXPORTER_PHONE = models.TextField(blank=True, null=True)
     EXPORTER_EMAIL = models.TextField(blank=True, null=True)
     EXPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     COUNTRY = models.ForeignKey(CountryMaster, related_name='ExportTable_COUNTRY',
