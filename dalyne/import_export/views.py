@@ -24,6 +24,7 @@ from import_export.tasks import upload_excel_file_async, upload_company_file_asy
 from datetime import datetime
 from .utils.filters import ProductFilter
 from dateutil.relativedelta import relativedelta
+from advanced_search.models import RequestedDownloadModel
 
 
 class PlansListView(generics.ListAPIView):
@@ -272,6 +273,7 @@ class AdvancedSearchAPI(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         request_serializer = self.serializer_class(data=self.request.data)
         if request_serializer.is_valid(raise_exception=True):
+            tenant = self.request.user.tenant
             start_date = request_serializer.validated_data.get("start_date")
             end_date = request_serializer.validated_data.get("end_date")
             time_difference = relativedelta(end_date, start_date)
@@ -280,10 +282,46 @@ class AdvancedSearchAPI(generics.CreateAPIView):
                                           "more than 3 years. Please select the appropriate "
                                           "range of search."},
                                 status=status.HTTP_400_BAD_REQUEST)
+
+            requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id,
+                                                                 request_type='search').first()
+            try:
+                if not requested_qs:
+                    search_points = tenant.userplans_set.all().first().plans.searches
+                else:
+                    search_points = requested_qs.remaining_search_points
+            except:
+                search_points = 0
+            if search_points == 0:
+                return Response({'msg': f"Please choose the appropriate plan to search the shipments.Current Plan"
+                                        f"has {search_points} search points"},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if requested_qs:
+                try:
+                    search_points = int(search_points)
+                    requested_qs.remaining_search_points -= 1
+                    requested_qs.save()
+                except:
+                    pass
+            else:
+                try:
+                    remaining_search_points = int(search_points) - 1
+                except:
+                    remaining_search_points = None
+                requested_qs = RequestedDownloadModel.objects.create(
+                    tenant=tenant,
+                    remaining_search_points=remaining_search_points,
+                    request_type="search"
+
+                )
+            if isinstance(requested_qs.remaining_search_points, int) and requested_qs.remaining_search_points < 0:
+                return Response({'msg': "You have reached the limit of the searches permitted in this plan"
+                                        "To search more data, upgrade your plan accordingly."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
             country_id = request_serializer.validated_data.pop("country")
             search_obj = request_serializer.save()
             country_obj = CountryMaster.objects.get(id=country_id)
-            tenant = self.request.user.tenant
             search_obj.country = country_obj
             search_obj.tenant = tenant
             search_obj.save()

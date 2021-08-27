@@ -181,7 +181,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             return None
 
     def get_remaining_search_points(self, obj):
-        return None
+        try:
+            return obj.user.tenant.user_downloads.first().remaining_search_points
+        except:
+            return None
 
     def get_company_name(self, obj):
         try:
