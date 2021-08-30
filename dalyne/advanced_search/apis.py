@@ -142,8 +142,9 @@ class SubFilterListingAPI(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         """ custom list method """
         queryset = self.filter_queryset(self.get_queryset())
+        limit_qs = queryset[:1000]
         serializer = self.get_serializer_class()
-        page = self.paginate_queryset(queryset)
+        page = self.paginate_queryset(limit_qs)
         serializer = serializer(page, many=True, context={"request": request})
         resp_dict = dict()
         resp_dict["shipment_count"] = queryset.count()
@@ -173,7 +174,8 @@ class ExportAPIView(views.APIView):
     def post(self, request, *args, **kwargs):
         excel_limit = QUERY_LIMIT
         tenant = self.request.user.tenant
-        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id).first()
+        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id,
+                                                             request_type='download').first()
         try:
             if not requested_qs:
                 download_points = tenant.userplans_set.all().first().plans.download_points
@@ -305,7 +307,8 @@ class ExportAPIView(views.APIView):
                     RequestedDownloadModel.objects.create(
                         tenant=tenant,
                         downloaded_ids=downloaded_ids,
-                        remaining_points=remaining_points
+                        remaining_points=remaining_points,
+                        request_type="download"
                     )
                 else:
                     if downloaded_ids:
@@ -467,7 +470,9 @@ class DownloadMessage(views.APIView):
 
     def get(self, request, *args, **kwargs):
         tenant = self.request.user.tenant
-        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id).first()
+        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id,
+                                                             request_type="download"
+                                                             ).first()
         if requested_qs:
             message = f"Thank You for downloading the Shipments data.You are now left with " \
                       f"{requested_qs.remaining_points} download points "
@@ -594,8 +599,25 @@ class OrderingListingAPI(generics.ListAPIView):
                         raise exceptions.ValidationError("Both min quantity and max quantity are required")
                     else:
                         qs = qs.filter(QUANTITY__gte=min_qty, QUANTITY__lte=max_qty)
-                return qs
+                return qs[:1000]
             else:
                 return {}
         else:
             return {}
+
+
+class RequestSearchPointsAPI(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        resp_dict = dict()
+        tenant = self.request.user.tenant
+        resp_dict["total_points"] = tenant.userplans_set.all().first().plans.searches
+        requested_qs = RequestedDownloadModel.objects.filter(tenant_id=tenant.id,
+                                                             request_type="search"
+                                                             ).first()
+        if requested_qs:
+            resp_dict["remaining_points"] = requested_qs.remaining_search_points
+        return Response(
+            resp_dict,
+            status=status.HTTP_200_OK
+        )

@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'export/shipments/$', apis.ExportAPIView.as_view(), name='shipments'),
     url(r'exporters/importers/list/$', apis.ExporterImporterList.as_view(), name='name-list'),
     url(r'ordered/data/$', apis.OrderingListingAPI.as_view(), name='ordered'),
-    url(r'download/data/response/$', apis.DownloadMessage.as_view(), name='download-message')
+    url(r'download/data/response/$', apis.DownloadMessage.as_view(), name='download-message'),
+    url(r'search/data/response/$', apis.RequestSearchPointsAPI.as_view(), name='search-message')
 
 ]

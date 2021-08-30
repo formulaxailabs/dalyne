@@ -1,5 +1,7 @@
+import random
 from django.shortcuts import render
-from rest_framework import generics
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics, views
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from django.db import transaction
@@ -9,7 +11,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from knox.auth import TokenAuthentication
 from rest_framework import status
-from core_module.models import Profile, User
+from core_module.models import Profile, User, UserOtp
 from django.contrib.auth.signals import user_logged_out
 from custom_exception_message import CustomAPIException
 from custom_decorator import response_modify_decorator_post, \
@@ -18,12 +20,14 @@ from custom_decorator import response_modify_decorator_post, \
         response_decorator_list_or_get_after_execution_onoff_pagination, \
         response_modify_decorator_get_single_after_execution
 from users.knox_views.views import LoginView as KnoxLoginView, LogoutAllView
-from users.serializers import UserSerializer, AuthTokenSerializer
+from users.serializers import UserSerializer, AuthTokenSerializer, UserOtpSerializer, VerifyOTPSerializer, \
+    ProfileSerializer, ChangePasswordSerializer
 from rest_framework.exceptions import APIException
 from datetime import datetime
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from core_module.utils import generate_token
+from .tasks import SendOTPNotificationOnEmail
 
 
 def activate(request, uidb64, token):
@@ -42,7 +46,6 @@ def activate(request, uidb64, token):
             )
     else:
         return redirect(expired_redirect_url)
-
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -105,6 +108,96 @@ class LoginView(KnoxLoginView, generics.CreateAPIView):
         else:
             return Response(
                 serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class SendOTPView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserOtpSerializer
+    model = UserOtp
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            email = serializer.validated_data['email']
+            otp_code = random.randint(11111, 99999)
+            data = {
+                'email': email,
+                'otp': otp_code,
+            }
+            try:
+                user_otp = UserOtp.objects.filter(email=email)
+                user_otp.delete()
+                user_otp = UserOtp.objects.create(**data)
+            except UserOtp.DoesNotExist:
+                user_otp = UserOtp.objects.create(**data)
+            otp = user_otp.get_otp()
+            ctx = {
+                'otp_code': otp,
+                'user_email': email,
+                'subject_template_name': 'Verify your Dalyne Email address !!',
+                'html_body_template_name': 'otp.html',
+                'text_template': 'otp.txt'
+            }
+
+            task = SendOTPNotificationOnEmail()
+            task.run(**ctx)
+            return Response(
+                {'msg': 'OTP has been sent to entered email address'},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class VerifyOTPView(generics.CreateAPIView):
+    serializer_class = VerifyOTPSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            UserOtp.objects.filter(email=serializer.validated_data["email"]).delete()
+            return Response({"msg": "Email address has been successfully verified"},
+                            status=status.HTTP_200_OK)
+
+
+class ProfileAPI(generics.ListAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = (IsAuthenticated,)
+    model = Profile
+    pagination_class = None
+
+    def get_queryset(self):
+        return self.model.objects.filter(user=self.request.user)
+
+
+class ChangePasswordView(views.APIView):
+    """ change user password for authenticated user """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer
+
+    @swagger_auto_schema(
+        request_body=ChangePasswordSerializer,
+        operation_id="Change password")
+    def post(self, request, *args, **kwargs):
+
+        serializer = self.serializer_class(
+            data=request.data, context={"request": request})
+        if serializer.is_valid(raise_exception=True):
+            request.user.set_password(
+                serializer.validated_data["new_password"])
+            request.user.save()
+            return Response(
+                {"msg": "Password successfully changed"},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"error": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

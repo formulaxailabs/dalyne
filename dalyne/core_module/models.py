@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from django.utils.translation import gettext as _
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,PermissionsMixin
@@ -33,6 +34,35 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+
+class UserOtp(models.Model):
+    """ model for user otp"""
+
+    email = models.EmailField(
+        null=True,
+        blank=True,
+        max_length=255
+    )
+    otp = models.CharField(
+        max_length=5
+    )
+    created_on = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        blank=True)
+
+    def __str__(self):
+        return "{0}-{1}".format(self.email, self.otp)
+
+    def get_email(self):
+        return self.email
+
+    def get_otp(self):
+        return self.otp
+
+    def get_created_time(self):
+        return self.created_on
 
 
 class Tenant(models.Model):
@@ -262,7 +292,7 @@ class ImportTable(models.Model):
             blank=True, null=True)
     UNT_PRICE_INR = models.DecimalField(max_digits=15, decimal_places=2,
             blank=True, null=True)
-    INVOICE_NO = models.IntegerField(blank=True, null=True)
+    INVOICE_NO = models.TextField(blank=True, null=True)
     BE_NO = models.BigIntegerField(blank=True, null=True)
     UNT_RATE_WITH_DUTY_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
@@ -295,15 +325,15 @@ class ImportTable(models.Model):
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     COUNTRY_OF_ORIGIN = models.TextField(blank=True, null=True)
     PORT_OF_LOADING = models.TextField(blank=True, null=True)
-    PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
     PORT_CODE = models.CharField(max_length=60, blank=True, null=True)
+    PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
     MODE_OF_PORT  = models.CharField(max_length=60, blank=True, null=True)
     IMPORTER_ID = models.TextField(blank=True, null=True)
     IMPORTER_NAME  = models.TextField(blank=True, null=True)
     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
     IMPORTER_CITY_OR_STATE = models.TextField(blank=True, null=True)
     IMPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
-    IMPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
+    IMPORTER_PHONE = models.TextField(blank=True, null=True)
     IMPORTER_EMAIL = models.TextField(blank=True, null=True)
     IMPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     BE_TYPE = models.CharField(max_length=120, blank=True, null=True)
@@ -340,7 +370,7 @@ class ExportTable(models.Model):
             blank=True, null=True)
     UNT_PRICE_INR = models.DecimalField(max_digits=15, decimal_places=2,
             blank=True, null=True)
-    INVOICE_NO = models.CharField(max_length=40, blank=True, null=True)
+    INVOICE_NO = models.TextField(blank=True, null=True)
     SB_NO = models.BigIntegerField(blank=True, null=True)
     UNIT_RATE_WITH_FOB_INR = models.DecimalField(max_digits=25, decimal_places=10,
             blank=True, null=True)
@@ -357,15 +387,15 @@ class ExportTable(models.Model):
     IMPORTER_ADDRESS = models.TextField(blank=True, null=True)
     COUNTRY_OF_ORIGIN = models.TextField(blank=True, null=True)
     PORT_OF_LOADING = models.TextField(blank=True, null=True)
-    PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
     PORT_CODE = models.CharField(max_length=60, blank=True, null=True)
+    PORT_OF_DISCHARGE = models.TextField(blank=True, null=True)
     MODE_OF_PORT  = models.CharField(max_length=60, blank=True, null=True)
     IEC = models.TextField(blank=True, null=True)
     EXPORTER_NAME = models.TextField(blank=True, null=True)
     EXPORTER_ADDRESS = models.TextField(blank=True, null=True)
     EXPORTER_CITY = models.TextField(blank=True, null=True)
     EXPORTER_PIN = models.CharField(max_length=60, blank=True, null=True)
-    EXPORTER_PHONE = models.CharField(max_length=60, blank=True, null=True)
+    EXPORTER_PHONE = models.TextField(blank=True, null=True)
     EXPORTER_EMAIL = models.TextField(blank=True, null=True)
     EXPORTER_CONTACT_PERSON = models.TextField(blank=True, null=True)
     COUNTRY = models.ForeignKey(CountryMaster, related_name='ExportTable_COUNTRY',
@@ -500,3 +530,36 @@ class FilterDataModel(models.Model):
 
     def deactivate_workspace(self):
         self.is_active = False
+
+
+class TransactionsModel(models.Model):
+    plan = models.ForeignKey(
+        Plans,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="plan_detail"
+    )
+    cost = models.IntegerField(
+        null=True,
+        blank=True
+    )
+    order_id = models.CharField(
+        max_length=100
+    )
+    order_date = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        blank=True
+    )
+    modified_on = models.DateTimeField(
+        auto_now=True,
+        null=True,
+        blank=True
+    )
+    is_transaction_successful = models.BooleanField(
+        default=False
+    )
+
+    def __str__(self):
+        return f"{self.plan.name} => {self.order_id}"
