@@ -124,13 +124,16 @@ DATABASES = {
 
 #===============Email================================#
 
-SENDGRID_API_KEY = "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"
-EMAIL_BACKEND = "sgbackend.SendGridBackend"
-EMAIL_HOST_USER = 'apikey'
-EMAIL_HOST_PASSWORD = "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"
-DEFAULT_FROM_EMAIL = "no-reply@eximine.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_FROM_C = 'no-reply@therescuetribe.com'
+DEFAULT_FROM_EMAIL = 'no-reply@therescuetribe.com'
+SERVER_EMAIL = 'no-reply@therescuetribe.com'
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST = 'ams-node8.websitehostserver.net'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'no-reply@therescuetribe.com'
+EMAIL_HOST_PASSWORD = 'myxjwnhqmckytzlr123'
 
 #====================Celery=====================================#
 from celery.schedules import crontab
